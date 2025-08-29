@@ -3,29 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CursorClone - AI Coding Agent</title>
+    <title>CodeForge AI - Professional Coding Agent</title>
     
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <!-- Monaco Editor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    <!-- Marked for markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     
     <style>
         :root {
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
             --bg-tertiary: #21262d;
-            --border-color: #30363d;
+            --bg-quaternary: #30363d;
+            --border-primary: #30363d;
+            --border-secondary: #21262d;
             --text-primary: #f0f6fc;
             --text-secondary: #8b949e;
+            --text-tertiary: #7d8590;
             --accent-blue: #58a6ff;
             --accent-green: #3fb950;
+            --accent-orange: #ff8c42;
             --accent-red: #f85149;
-            --accent-yellow: #d29922;
+            --accent-purple: #a5a2ff;
+            --shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
 
         * {
@@ -35,56 +41,32 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
+            font-size: 13px;
         }
 
+        /* Main Layout */
         .app-container {
             display: flex;
             height: 100vh;
             flex-direction: column;
         }
 
-        /* Header */
-        .header {
+        /* Title Bar */
+        .title-bar {
+            height: 32px;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 16px;
-            height: 48px;
+            border-bottom: 1px solid var(--border-primary);
             display: flex;
             align-items: center;
-            gap: 16px;
-            z-index: 100;
-        }
-
-        .logo {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--accent-blue);
-        }
-
-        .header-nav {
-            display: flex;
-            gap: 8px;
-            margin-left: auto;
-        }
-
-        .nav-btn {
-            background: none;
-            border: none;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
             color: var(--text-secondary);
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
         }
 
         /* Main Layout */
@@ -94,56 +76,111 @@
             overflow: hidden;
         }
 
+        /* Activity Bar */
+        .activity-bar {
+            width: 48px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .activity-item {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .activity-item:hover,
+        .activity-item.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .activity-item.active {
+            border-left: 2px solid var(--accent-blue);
+        }
+
         /* Sidebar */
         .sidebar {
-            width: 300px;
+            width: 280px;
             background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-primary);
             display: flex;
             flex-direction: column;
             transition: width 0.3s ease;
         }
 
         .sidebar.collapsed {
-            width: 48px;
+            width: 0;
+            overflow: hidden;
         }
 
         .sidebar-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
+            height: 40px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-        }
-
-        .sidebar-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .sidebar-tab {
-            flex: 1;
-            padding: 8px;
-            background: none;
-            border: none;
+            border-bottom: 1px solid var(--border-primary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .sidebar-tab.active {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
         }
 
-        /* Center Panel */
-        .center-panel {
+        /* File Explorer */
+        .file-tree {
+            padding: 8px 0;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px 4px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .tree-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .tree-item.active {
+            background: var(--bg-quaternary);
+            color: var(--accent-blue);
+        }
+
+        .tree-item .icon {
+            width: 16px;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+
+        .tree-item .name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Editor Area */
+        .editor-area {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -151,313 +188,362 @@
         }
 
         .editor-tabs {
+            height: 36px;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-primary);
             display: flex;
             overflow-x: auto;
         }
 
         .editor-tab {
-            padding: 8px 16px;
-            background: var(--bg-tertiary);
-            border-right: 1px solid var(--border-color);
-            cursor: pointer;
+            min-width: 120px;
+            height: 36px;
+            padding: 0 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            white-space: nowrap;
+            background: var(--bg-tertiary);
+            border-right: 1px solid var(--border-primary);
+            cursor: pointer;
+            font-size: 12px;
+            position: relative;
         }
 
         .editor-tab.active {
             background: var(--bg-primary);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .editor-tab .icon {
+            width: 12px;
+            margin-right: 6px;
+        }
+
+        .editor-tab .close {
+            margin-left: auto;
+            padding: 2px;
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .editor-tab:hover .close {
+            opacity: 1;
+        }
+
+        .editor-tab .close:hover {
+            background: var(--bg-quaternary);
         }
 
         .editor-container {
             flex: 1;
             position: relative;
+            overflow: hidden;
         }
 
-        /* AI Chat Panel */
+        /* AI Panel */
         .ai-panel {
-            width: 400px;
+            width: 350px;
             background: var(--bg-secondary);
-            border-left: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-primary);
             display: flex;
             flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .ai-panel.collapsed {
+            width: 0;
+            overflow: hidden;
         }
 
         .ai-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
+            height: 40px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            border-bottom: 1px solid var(--border-primary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
         }
 
         .ai-tools {
-            display: flex;
-            flex-wrap: wrap;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-primary);
         }
 
         .ai-tool {
-            padding: 4px 8px;
+            padding: 8px;
             background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 12px;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            text-align: center;
             cursor: pointer;
+            font-size: 10px;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
 
-        .ai-tool:hover, .ai-tool.active {
-            background: var(--accent-blue);
+        .ai-tool:hover {
+            background: var(--bg-quaternary);
             border-color: var(--accent-blue);
         }
 
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .message {
-            margin-bottom: 16px;
-        }
-
-        .message.user {
-            text-align: right;
-        }
-
-        .message.ai {
-            text-align: left;
-        }
-
-        .message-content {
-            display: inline-block;
-            max-width: 80%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: var(--bg-tertiary);
-        }
-
-        .message.user .message-content {
+        .ai-tool.active {
             background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
         }
 
-        .chat-input {
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
+        .ai-tool .emoji {
+            font-size: 16px;
         }
 
-        .input-container {
-            display: flex;
-            gap: 8px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px;
-        }
-
-        .chat-textarea {
+        .ai-commands {
             flex: 1;
-            background: none;
-            border: none;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .command-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            padding: 8px 12px;
             color: var(--text-primary);
-            resize: none;
+            font-size: 12px;
             outline: none;
+            resize: none;
+            min-height: 60px;
             font-family: inherit;
         }
 
-        .send-btn {
-            background: var(--accent-blue);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        /* Terminal */
-        .terminal-panel {
-            height: 250px;
-            background: var(--bg-tertiary);
-            border-top: 1px solid var(--border-color);
-            display: none;
-            flex-direction: column;
-        }
-
-        .terminal-panel.open {
-            display: flex;
-        }
-
-        .terminal-header {
-            padding: 8px 16px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .terminal-body {
-            flex: 1;
-            background: #000;
-        }
-
-        /* File Explorer */
-        .file-explorer {
-            padding: 0;
-        }
-
-        .file-item {
-            padding: 6px 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 2px;
-        }
-
-        .file-item:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .file-item.active {
-            background: var(--accent-blue);
-        }
-
-        /* Project Templates */
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 12px;
-        }
-
-        .template-card {
-            padding: 16px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .template-card:hover {
+        .command-input:focus {
             border-color: var(--accent-blue);
-            transform: translateY(-2px);
         }
 
-        .template-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+        .command-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
         }
 
-        /* Buttons */
         .btn {
-            background: var(--accent-blue);
+            padding: 6px 12px;
             border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 11px;
+            font-weight: 500;
             transition: all 0.2s;
         }
 
-        .btn:hover {
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
             background: #4493f8;
         }
 
         .btn-secondary {
             background: var(--bg-tertiary);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-primary);
         }
 
         .btn-secondary:hover {
-            background: var(--border-color);
+            background: var(--bg-quaternary);
         }
 
-        /* Form Elements */
-        .input {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 8px 12px;
-            border-radius: 6px;
-            outline: none;
-            font-size: 14px;
-        }
-
-        .input:focus {
-            border-color: var(--accent-blue);
-        }
-
-        /* Utilities */
-        .hidden {
-            display: none !important;
-        }
-
-        .flex {
+        /* Status Bar */
+        .status-bar {
+            height: 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-primary);
             display: flex;
-        }
-
-        .flex-col {
-            flex-direction: column;
-        }
-
-        .items-center {
             align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .gap-2 {
-            gap: 8px;
-        }
-
-        .mb-2 {
-            margin-bottom: 8px;
-        }
-
-        .mb-4 {
-            margin-bottom: 16px;
-        }
-
-        .p-2 {
-            padding: 8px;
-        }
-
-        .text-sm {
-            font-size: 12px;
-        }
-
-        .text-secondary {
+            padding: 0 12px;
+            font-size: 11px;
             color: var(--text-secondary);
         }
 
-        /* Monaco Editor */
-        .monaco-editor-container {
-            width: 100%;
-            height: 100%;
+        .status-item {
+            margin-right: 16px;
+            cursor: pointer;
+        }
+
+        .status-item:hover {
+            color: var(--text-primary);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .welcome-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Project Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .template-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .template-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .template-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            padding: 12px 16px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--accent-green);
+        }
+
+        .notification.error {
+            border-color: var(--accent-red);
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--bg-quaternary);
+            border-radius: 50%;
+            border-top: 2px solid var(--accent-blue);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-quaternary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-primary);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: 48px;
+                top: 0;
+                bottom: 24px;
+                z-index: 100;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
             .ai-panel {
-                width: 100%;
-                position: fixed;
-                top: 48px;
+                position: absolute;
                 right: 0;
-                bottom: 0;
-                z-index: 200;
+                top: 0;
+                bottom: 24px;
+                z-index: 100;
                 transform: translateX(100%);
                 transition: transform 0.3s ease;
             }
@@ -465,97 +551,130 @@
             .ai-panel.open {
                 transform: translateX(0);
             }
+        }
 
-            .sidebar {
-                width: 250px;
-            }
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            padding: 4px 0;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: none;
+        }
+
+        .context-menu-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: var(--border-primary);
+            margin: 4px 0;
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">🤖 CursorClone</div>
-            <div class="header-nav">
-                <button class="nav-btn active" data-view="editor">Editor</button>
-                <button class="nav-btn" data-view="terminal">Terminal</button>
-                <button class="nav-btn" data-view="preview">Preview</button>
-                <button class="nav-btn" id="toggle-ai">AI Chat</button>
-            </div>
-        </header>
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <span>CodeForge AI - Professional Coding Agent</span>
+        </div>
 
         <!-- Main Layout -->
         <div class="main-layout">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <h3>Project</h3>
-                    <button class="nav-btn" id="toggle-sidebar">
-                        <i class="fas fa-bars"></i>
-                    </button>
+            <!-- Activity Bar -->
+            <div class="activity-bar">
+                <div class="activity-item active" data-panel="explorer" title="Explorer">
+                    <i class="fas fa-folder"></i>
                 </div>
-                
-                <div class="sidebar-tabs">
-                    <button class="sidebar-tab active" data-tab="files">Files</button>
-                    <button class="sidebar-tab" data-tab="templates">Templates</button>
-                    <button class="sidebar-tab" data-tab="git">Git</button>
+                <div class="activity-item" data-panel="search" title="Search">
+                    <i class="fas fa-search"></i>
                 </div>
+                <div class="activity-item" data-panel="git" title="Source Control">
+                    <i class="fab fa-git-alt"></i>
+                </div>
+                <div class="activity-item" data-panel="extensions" title="Extensions">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div class="activity-item" data-panel="ai" title="AI Assistant">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
 
-                <div class="sidebar-content">
-                    <!-- Files Tab -->
-                    <div id="files-tab" class="tab-content">
-                        <div class="mb-4">
-                            <button class="btn" id="new-file-btn">
-                                <i class="fas fa-plus"></i> New File
-                            </button>
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <!-- Explorer Panel -->
+                <div class="panel-content" id="explorer-panel">
+                    <div class="sidebar-header">
+                        <span>Explorer</span>
+                        <div style="margin-left: auto;">
+                            <i class="fas fa-plus" title="New File" id="new-file-btn" style="cursor: pointer; margin-right: 8px;"></i>
+                            <i class="fas fa-folder-plus" title="New Folder" id="new-folder-btn" style="cursor: pointer;"></i>
                         </div>
-                        <div class="file-explorer" id="file-explorer">
+                    </div>
+                    <div class="sidebar-content">
+                        <div class="file-tree" id="file-tree">
                             <!-- Files will be rendered here -->
                         </div>
                     </div>
+                </div>
 
-                    <!-- Templates Tab -->
-                    <div id="templates-tab" class="tab-content hidden">
-                        <h4 class="mb-2">Quick Start</h4>
+                <!-- Templates Panel -->
+                <div class="panel-content hidden" id="templates-panel">
+                    <div class="sidebar-header">
+                        <span>Project Templates</span>
+                    </div>
+                    <div class="sidebar-content">
                         <div class="template-grid">
                             <div class="template-card" data-template="react">
                                 <div class="template-icon">⚛️</div>
-                                <div class="text-sm">React</div>
+                                <div class="template-name">React App</div>
+                                <div class="template-desc">Modern React with hooks</div>
                             </div>
                             <div class="template-card" data-template="vue">
                                 <div class="template-icon">🟢</div>
-                                <div class="text-sm">Vue</div>
+                                <div class="template-name">Vue App</div>
+                                <div class="template-desc">Vue 3 with Composition API</div>
+                            </div>
+                            <div class="template-card" data-template="nextjs">
+                                <div class="template-icon">▲</div>
+                                <div class="template-name">Next.js</div>
+                                <div class="template-desc">Full-stack React framework</div>
                             </div>
                             <div class="template-card" data-template="express">
                                 <div class="template-icon">🟢</div>
-                                <div class="text-sm">Express</div>
+                                <div class="template-name">Express API</div>
+                                <div class="template-desc">Node.js REST API</div>
                             </div>
                             <div class="template-card" data-template="static">
                                 <div class="template-icon">🌐</div>
-                                <div class="text-sm">Static</div>
+                                <div class="template-name">Static Site</div>
+                                <div class="template-desc">HTML, CSS, JavaScript</div>
+                            </div>
+                            <div class="template-card" data-template="discord-bot">
+                                <div class="template-icon">🤖</div>
+                                <div class="template-name">Discord Bot</div>
+                                <div class="template-desc">Node.js Discord bot</div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Git Tab -->
-                    <div id="git-tab" class="tab-content hidden">
-                        <div class="mb-4">
-                            <button class="btn" id="git-init">Initialize Git</button>
-                        </div>
-                        <div class="mb-2">
-                            <input type="text" class="input" id="commit-msg" placeholder="Commit message">
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="btn-secondary" id="git-add">Add</button>
-                            <button class="btn" id="git-commit">Commit</button>
-                        </div>
-                    </div>
                 </div>
-            </aside>
+            </div>
 
-            <!-- Center Panel -->
-            <main class="center-panel">
+            <!-- Editor Area -->
+            <div class="editor-area">
                 <!-- Editor Tabs -->
                 <div class="editor-tabs" id="editor-tabs">
                     <!-- Tabs will be rendered here -->
@@ -563,840 +682,784 @@
 
                 <!-- Editor Container -->
                 <div class="editor-container">
-                    <div id="monaco-editor" class="monaco-editor-container"></div>
+                    <!-- Monaco Editor -->
+                    <div id="monaco-editor" style="width: 100%; height: 100%; display: none;"></div>
                     
                     <!-- Welcome Screen -->
-                    <div id="welcome-screen" class="flex items-center justify-center" style="height: 100%; flex-direction: column; gap: 16px;">
-                        <h2>Welcome to CursorClone</h2>
-                        <p class="text-secondary">AI-powered coding agent</p>
-                        <div class="flex gap-2">
-                            <button class="btn" id="create-project">Create Project</button>
-                            <button class="btn-secondary" id="open-ai-chat">Open AI Chat</button>
+                    <div class="welcome-screen" id="welcome-screen">
+                        <div class="welcome-logo">🚀</div>
+                        <div class="welcome-title">CodeForge AI</div>
+                        <div class="welcome-subtitle">Professional AI-Powered Coding Agent</div>
+                        <div class="welcome-actions">
+                            <button class="btn btn-primary" id="start-coding">Start Coding</button>
+                            <button class="btn btn-secondary" id="open-templates">Browse Templates</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Terminal Panel -->
-                <div class="terminal-panel" id="terminal-panel">
-                    <div class="terminal-header">
-                        <span><i class="fas fa-terminal"></i> Terminal</span>
-                        <button class="nav-btn" id="close-terminal">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="terminal-body" id="terminal-body">
-                        <!-- Terminal will be rendered here -->
-                    </div>
-                </div>
-            </main>
-
-            <!-- AI Chat Panel -->
-            <aside class="ai-panel" id="ai-panel">
+            <!-- AI Panel -->
+            <div class="ai-panel" id="ai-panel">
                 <div class="ai-header">
-                    <h3>AI Assistant</h3>
-                    <button class="nav-btn" id="close-ai">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="ai-tools">
-                    <div class="ai-tool" data-tool="code">💻 Code</div>
-                    <div class="ai-tool" data-tool="debug">🐛 Debug</div>
-                    <div class="ai-tool" data-tool="refactor">♻️ Refactor</div>
-                    <div class="ai-tool" data-tool="explain">📖 Explain</div>
-                    <div class="ai-tool" data-tool="optimize">⚡ Optimize</div>
-                    <div class="ai-tool" data-tool="test">🧪 Test</div>
-                </div>
-
-                <div class="chat-messages" id="chat-messages">
-                    <div class="message ai">
-                        <div class="message-content">
-                            Hello! I'm your AI coding assistant. I can help you write code, debug issues, explain concepts, and much more. What would you like to work on today?
-                        </div>
+                    <span>AI Assistant</span>
+                    <div style="margin-left: auto;">
+                        <i class="fas fa-cog" title="Settings" style="cursor: pointer;"></i>
                     </div>
                 </div>
 
-                <div class="chat-input">
-                    <div class="input-container">
-                        <textarea class="chat-textarea" id="chat-input" placeholder="Ask me anything about coding..." rows="1"></textarea>
-                        <button class="send-btn" id="send-btn">
-                            <i class="fas fa-paper-plane"></i>
+                <!-- AI Tools -->
+                <div class="ai-tools">
+                    <div class="ai-tool active" data-tool="general">
+                        <div class="emoji">💬</div>
+                        <div>Chat</div>
+                    </div>
+                    <div class="ai-tool" data-tool="code">
+                        <div class="emoji">💻</div>
+                        <div>Code</div>
+                    </div>
+                    <div class="ai-tool" data-tool="debug">
+                        <div class="emoji">🐛</div>
+                        <div>Debug</div>
+                    </div>
+                    <div class="ai-tool" data-tool="refactor">
+                        <div class="emoji">♻️</div>
+                        <div>Refactor</div>
+                    </div>
+                    <div class="ai-tool" data-tool="explain">
+                        <div class="emoji">📖</div>
+                        <div>Explain</div>
+                    </div>
+                    <div class="ai-tool" data-tool="optimize">
+                        <div class="emoji">⚡</div>
+                        <div>Optimize</div>
+                    </div>
+                </div>
+
+                <!-- AI Commands -->
+                <div class="ai-commands">
+                    <textarea 
+                        class="command-input" 
+                        id="ai-input" 
+                        placeholder="Tell me what you want to build or fix...
+Examples:
+• Create a todo app with React
+• Fix the bug in my JavaScript code
+• Add user authentication
+• Optimize this component
+• Explain how this function works"></textarea>
+                    
+                    <div class="command-buttons">
+                        <button class="btn btn-primary" id="execute-ai">
+                            <i class="fas fa-paper-plane"></i> Execute
+                        </button>
+                        <button class="btn btn-secondary" id="clear-input">
+                            <i class="fas fa-trash"></i> Clear
                         </button>
                     </div>
                 </div>
-            </aside>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item" id="status-files">0 files</div>
+            <div class="status-item" id="status-ai">AI: Ready</div>
+            <div class="status-item" id="status-project">No project</div>
+            <div style="margin-left: auto;">
+                <div class="status-item" id="status-language">Plain Text</div>
+                <div class="status-item" id="status-line">Ln 1, Col 1</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" data-action="new-file">
+            <i class="fas fa-file"></i> New File
+        </div>
+        <div class="context-menu-item" data-action="new-folder">
+            <i class="fas fa-folder"></i> New Folder
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="rename">
+            <i class="fas fa-edit"></i> Rename
+        </div>
+        <div class="context-menu-item" data-action="delete">
+            <i class="fas fa-trash"></i> Delete
         </div>
     </div>
 
     <script>
-        // App State
-        let state = {
-            files: {},
-            openTabs: [],
-            activeTab: null,
-            monacoEditor: null,
-            terminal: null,
-            aiModel: 'gemini-1.5-flash-latest',
-            apiKey: 'AIzaSyD65oyN5DC1unVhzYwID0GReRJzKSxkRKM',
-            conversationHistory: [],
-            currentProject: null
-        };
-
-        // Project Templates
-        const templates = {
-            react: {
-                name: 'React App',
-                files: {
-                    'index.html': `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>React App</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <div id="root"></div>
-    <script type="text/babel" src="app.js"></script>
-</body>
-</html>`,
-                    'app.js': `function App() {
-    const [count, setCount] = React.useState(0);
-    
-    return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                    React App
-                </h1>
-                <p className="text-gray-600 mb-6">
-                    Count: {count}
-                </p>
-                <button 
-                    onClick={() => setCount(count + 1)}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Click me
-                </button>
-            </div>
-        </div>
-    );
-}
-
-ReactDOM.render(<App />, document.getElementById('root'));`
-                }
-            },
-            vue: {
-                name: 'Vue App',
-                files: {
-                    'index.html': `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue App</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <div id="app"></div>
-    <script src="app.js"></script>
-</body>
-</html>`,
-                    'app.js': `const { createApp, ref } = Vue;
-
-createApp({
-    setup() {
-        const count = ref(0);
-        const message = ref('Vue App');
-        
-        return { count, message };
-    },
-    template: \`
-        <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
-                <h1 class="text-3xl font-bold text-gray-800 mb-4">
-                    {{ message }}
-                </h1>
-                <p class="text-gray-600 mb-6">
-                    Count: {{ count }}
-                </p>
-                <button 
-                    @click="count++"
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                >
-                    Increment
-                </button>
-            </div>
-        </div>
-    \`
-}).mount('#app');`
-                }
-            },
-            static: {
-                name: 'Static Website',
-                files: {
-                    'index.html': `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <header>
-        <nav>
-            <h1>My Website</h1>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <main>
-        <section id="home">
-            <h2>Welcome</h2>
-            <p>This is a static website template.</p>
-            <button onclick="alert('Hello World!')">Click me</button>
-        </section>
-    </main>
-    
-    <script src="script.js"></script>
-</body>
-</html>`,
-                    'style.css': `* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    line-height: 1.6;
-    color: #333;
-}
-
-header {
-    background: #007bff;
-    color: white;
-    padding: 1rem 0;
-}
-
-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-
-nav ul {
-    display: flex;
-    list-style: none;
-    gap: 2rem;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-}
-
-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-}`,
-                    'script.js': `console.log('Website loaded successfully!');
-
-// Add smooth scrolling
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});`
-                }
-            }
-        };
-
-        // Initialize Monaco Editor
-        function initializeMonacoEditor() {
-            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
-            require(['vs/editor/editor.main'], function () {
-                state.monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                    value: '// Welcome to CursorClone!\n// Start coding by creating a new file or selecting a template.',
-                    language: 'javascript',
-                    theme: 'vs-dark',
-                    automaticLayout: true,
-                    minimap: { enabled: true },
-                    fontSize: 14,
-                    wordWrap: 'on',
-                    scrollBeyondLastLine: false,
-                    renderWhitespace: 'selection',
-                    selectOnLineNumbers: true,
-                    lineNumbers: 'on',
-                    roundedSelection: false,
-                    readOnly: false,
-                    cursorStyle: 'line',
-                    automaticLayout: true,
-                });
-
-                // Listen for changes
-                state.monacoEditor.onDidChangeModelContent(() => {
-                    if (state.activeTab) {
-                        state.files[state.activeTab] = state.monacoEditor.getValue();
-                        updatePreview();
-                    }
-                });
-            });
-        }
-
-        // Initialize Terminal
-        function initializeTerminal() {
-            if (typeof Terminal !== 'undefined') {
-                state.terminal = new Terminal({
-                    theme: {
-                        background: '#000000',
-                        foreground: '#ffffff'
-                    },
-                    fontSize: 14,
-                    fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace'
-                });
+        // Global State
+        class CodeForgeAI {
+            constructor() {
+                this.files = {};
+                this.openTabs = [];
+                this.activeTab = null;
+                this.monacoEditor = null;
+                this.projectType = null;
+                this.aiTools = {
+                    general: 'General chat and assistance',
+                    code: 'Generate and write code',
+                    debug: 'Find and fix bugs',
+                    refactor: 'Improve code structure',
+                    explain: 'Explain code functionality',
+                    optimize: 'Optimize performance'
+                };
+                this.currentAITool = 'general';
+                this.apiKey = 'AIzaSyD65oyN5DC1unVhzYwID0GReRJzKSxkRKM';
+                this.aiModel = 'gemini-1.5-flash-latest';
+                this.isProcessing = false;
                 
-                state.terminal.open(document.getElementById('terminal-body'));
-                state.terminal.writeln('Welcome to CursorClone Terminal!');
-                state.terminal.writeln('Type "help" for available commands.');
-                state.terminal.write('$ ');
+                this.init();
+            }
 
-                // Handle terminal input
-                let currentLine = '';
-                state.terminal.onKey((key) => {
-                    const char = key.domEvent.key;
-                    if (char === 'Enter') {
-                        state.terminal.writeln('');
-                        handleTerminalCommand(currentLine);
-                        currentLine = '';
-                        state.terminal.write('$ ');
-                    } else if (char === 'Backspace') {
-                        if (currentLine.length > 0) {
-                            currentLine = currentLine.slice(0, -1);
-                            state.terminal.write('\b \b');
+            async init() {
+                await this.initializeMonacoEditor();
+                this.setupEventListeners();
+                this.updateUI();
+            }
+
+            // Monaco Editor Initialization
+            async initializeMonacoEditor() {
+                return new Promise((resolve) => {
+                    require.config({ 
+                        paths: { 
+                            vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' 
                         }
-                    } else if (char.length === 1) {
-                        currentLine += char;
-                        state.terminal.write(char);
-                    }
+                    });
+                    
+                    require(['vs/editor/editor.main'], () => {
+                        this.monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                            value: '',
+                            language: 'javascript',
+                            theme: 'vs-dark',
+                            automaticLayout: true,
+                            fontSize: 13,
+                            lineHeight: 20,
+                            fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace",
+                            minimap: { enabled: true },
+                            wordWrap: 'on',
+                            scrollBeyondLastLine: false,
+                            renderWhitespace: 'selection',
+                            selectOnLineNumbers: true,
+                            roundedSelection: false,
+                            readOnly: false,
+                            cursorStyle: 'line',
+                            mouseWheelZoom: true,
+                            contextmenu: true,
+                            folding: true,
+                            foldingStrategy: 'indentation',
+                            showFoldingControls: 'always',
+                            unfoldOnClickAfterEndOfLine: false,
+                            copyWithSyntaxHighlighting: true
+                        });
+
+                        // Listen for content changes
+                        this.monacoEditor.onDidChangeModelContent(() => {
+                            if (this.activeTab) {
+                                this.files[this.activeTab] = this.monacoEditor.getValue();
+                                this.updateTabModified(this.activeTab, true);
+                            }
+                        });
+
+                        // Listen for cursor position changes
+                        this.monacoEditor.onDidChangeCursorPosition((e) => {
+                            this.updateStatusBar();
+                        });
+
+                        resolve();
+                    });
                 });
             }
-        }
 
-        // Handle terminal commands
-        function handleTerminalCommand(command) {
-            const args = command.trim().split(' ');
-            const cmd = args[0];
+            // Event Listeners
+            setupEventListeners() {
+                // Activity bar
+                document.querySelectorAll('.activity-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const panel = e.currentTarget.dataset.panel;
+                        this.switchPanel(panel);
+                    });
+                });
 
-            switch (cmd) {
-                case 'help':
-                    state.terminal.writeln('Available commands:');
-                    state.terminal.writeln('  help     - Show this help');
-                    state.terminal.writeln('  ls       - List files');
-                    state.terminal.writeln('  clear    - Clear terminal');
-                    state.terminal.writeln('  npm      - NPM commands (simulation)');
-                    state.terminal.writeln('  git      - Git commands (simulation)');
-                    break;
-                case 'ls':
-                    const files = Object.keys(state.files);
-                    if (files.length === 0) {
-                        state.terminal.writeln('No files in project');
-                    } else {
-                        files.forEach(file => state.terminal.writeln(file));
+                // AI Tools
+                document.querySelectorAll('.ai-tool').forEach(tool => {
+                    tool.addEventListener('click', (e) => {
+                        const toolType = e.currentTarget.dataset.tool;
+                        this.selectAITool(toolType);
+                    });
+                });
+
+                // AI Execute
+                document.getElementById('execute-ai').addEventListener('click', () => {
+                    this.executeAICommand();
+                });
+
+                // Clear input
+                document.getElementById('clear-input').addEventListener('click', () => {
+                    document.getElementById('ai-input').value = '';
+                });
+
+                // New file/folder
+                document.getElementById('new-file-btn').addEventListener('click', () => {
+                    this.createNewFile();
+                });
+
+                document.getElementById('new-folder-btn').addEventListener('click', () => {
+                    this.createNewFolder();
+                });
+
+                // Welcome screen actions
+                document.getElementById('start-coding').addEventListener('click', () => {
+                    this.createNewFile();
+                });
+
+                document.getElementById('open-templates').addEventListener('click', () => {
+                    this.switchPanel('extensions');
+                    this.showTemplates();
+                });
+
+                // Template cards
+                document.querySelectorAll('.template-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const template = e.currentTarget.dataset.template;
+                        this.createFromTemplate(template);
+                    });
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    this.handleKeyboardShortcuts(e);
+                });
+
+                // AI input enter key
+                document.getElementById('ai-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        this.executeAICommand();
                     }
-                    break;
-                case 'clear':
-                    state.terminal.clear();
-                    break;
-                case 'npm':
-                    if (args[1] === 'install' && args[2]) {
-                        state.terminal.writeln(`Installing ${args[2]}...`);
-                        setTimeout(() => {
-                            state.terminal.writeln(`✓ ${args[2]} installed successfully`);
-                        }, 1000);
-                    } else {
-                        state.terminal.writeln('Usage: npm install <package>');
+                });
+
+                // Context menu
+                document.addEventListener('contextmenu', (e) => {
+                    if (e.target.closest('.tree-item')) {
+                        e.preventDefault();
+                        this.showContextMenu(e, e.target.closest('.tree-item'));
                     }
-                    break;
-                case 'git':
-                    handleGitCommand(args.slice(1));
-                    break;
-                default:
-                    if (command.trim()) {
-                        state.terminal.writeln(`Command not found: ${cmd}`);
-                    }
-            }
-        }
+                });
 
-        // Handle Git commands
-        function handleGitCommand(args) {
-            const cmd = args[0];
-            switch (cmd) {
-                case 'status':
-                    state.terminal.writeln('On branch main');
-                    state.terminal.writeln('Your branch is up to date.');
-                    break;
-                case 'add':
-                    state.terminal.writeln('Changes staged for commit');
-                    break;
-                case 'commit':
-                    if (args[1] === '-m' && args[2]) {
-                        state.terminal.writeln(`[main] ${args.slice(2).join(' ')}`);
-                    } else {
-                        state.terminal.writeln('Usage: git commit -m "message"');
-                    }
-                    break;
-                default:
-                    state.terminal.writeln(`git: '${cmd}' is not a git command`);
+                document.addEventListener('click', () => {
+                    this.hideContextMenu();
+                });
             }
-        }
 
-        // File Management
-        function createFile(filename) {
-            if (!filename || state.files[filename]) return;
-            
-            state.files[filename] = '';
-            openFile(filename);
-            renderFileExplorer();
-        }
+            // Panel Management
+            switchPanel(panelName) {
+                // Update activity bar
+                document.querySelectorAll('.activity-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-panel="${panelName}"]`).classList.add('active');
 
-        function openFile(filename) {
-            if (!state.files.hasOwnProperty(filename)) return;
-            
-            if (!state.openTabs.includes(filename)) {
-                state.openTabs.push(filename);
-            }
-            
-            state.activeTab = filename;
-            renderTabs();
-            
-            if (state.monacoEditor) {
-                const language = getLanguageFromFilename(filename);
-                const model = monaco.editor.createModel(state.files[filename], language);
-                state.monacoEditor.setModel(model);
-            }
-            
-            hideWelcomeScreen();
-        }
+                // Show/hide panels
+                document.querySelectorAll('.panel-content').forEach(panel => {
+                    panel.classList.add('hidden');
+                });
 
-        function closeFile(filename) {
-            const index = state.openTabs.indexOf(filename);
-            if (index > -1) {
-                state.openTabs.splice(index, 1);
-            }
-            
-            if (state.activeTab === filename) {
-                state.activeTab = state.openTabs.length > 0 ? state.openTabs[state.openTabs.length - 1] : null;
-                
-                if (state.activeTab) {
-                    openFile(state.activeTab);
+                if (panelName === 'ai') {
+                    document.getElementById('ai-panel').classList.remove('collapsed');
+                    document.getElementById('sidebar').classList.add('collapsed');
                 } else {
-                    showWelcomeScreen();
+                    document.getElementById('ai-panel').classList.add('collapsed');
+                    document.getElementById('sidebar').classList.remove('collapsed');
+                    
+                    const targetPanel = document.getElementById(`${panelName}-panel`) || 
+                                       document.getElementById('explorer-panel');
+                    targetPanel.classList.remove('hidden');
                 }
             }
-            
-            renderTabs();
-        }
 
-        function getLanguageFromFilename(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const langMap = {
-                'js': 'javascript',
-                'ts': 'typescript',
-                'html': 'html',
-                'css': 'css',
-                'json': 'json',
-                'md': 'markdown',
-                'py': 'python',
-                'java': 'java',
-                'cpp': 'cpp',
-                'c': 'c',
-                'go': 'go',
-                'rs': 'rust',
-                'php': 'php',
-                'rb': 'ruby'
-            };
-            return langMap[ext] || 'plaintext';
-        }
+            showTemplates() {
+                document.getElementById('templates-panel').classList.remove('hidden');
+                document.getElementById('explorer-panel').classList.add('hidden');
+            }
 
-        // UI Rendering
-        function renderFileExplorer() {
-            const explorer = document.getElementById('file-explorer');
-            explorer.innerHTML = '';
-            
-            Object.keys(state.files).sort().forEach(filename => {
-                const item = document.createElement('div');
-                item.className = 'file-item';
-                if (filename === state.activeTab) item.classList.add('active');
-                
-                const icon = getFileIcon(filename);
-                item.innerHTML = `
-                    <i class="${icon}"></i>
-                    <span>${filename}</span>
-                `;
-                
-                item.addEventListener('click', () => openFile(filename));
-                explorer.appendChild(item);
-            });
-        }
-
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const iconMap = {
-                'html': 'fab fa-html5',
-                'css': 'fab fa-css3-alt',
-                'js': 'fab fa-js-square',
-                'ts': 'fas fa-code',
-                'json': 'fas fa-brackets-curly',
-                'md': 'fab fa-markdown',
-                'py': 'fab fa-python',
-                'java': 'fab fa-java',
-                'php': 'fab fa-php',
-                'rb': 'fas fa-gem',
-                'go': 'fas fa-code',
-                'rs': 'fas fa-code'
-            };
-            return iconMap[ext] || 'fas fa-file';
-        }
-
-        function renderTabs() {
-            const tabsContainer = document.getElementById('editor-tabs');
-            tabsContainer.innerHTML = '';
-            
-            state.openTabs.forEach(filename => {
-                const tab = document.createElement('div');
-                tab.className = 'editor-tab';
-                if (filename === state.activeTab) tab.classList.add('active');
-                
-                tab.innerHTML = `
-                    <i class="${getFileIcon(filename)}"></i>
-                    <span>${filename}</span>
-                    <i class="fas fa-times" style="margin-left: 8px; cursor: pointer;"></i>
-                `;
-                
-                tab.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('fa-times')) {
-                        e.stopPropagation();
-                        closeFile(filename);
-                    } else {
-                        openFile(filename);
-                    }
+            // AI Tool Selection
+            selectAITool(toolType) {
+                document.querySelectorAll('.ai-tool').forEach(tool => {
+                    tool.classList.remove('active');
                 });
+                document.querySelector(`[data-tool="${toolType}"]`).classList.add('active');
+                this.currentAITool = toolType;
                 
-                tabsContainer.appendChild(tab);
-            });
-        }
-
-        function showWelcomeScreen() {
-            document.getElementById('welcome-screen').style.display = 'flex';
-            if (state.monacoEditor) {
-                document.getElementById('monaco-editor').style.display = 'none';
-            }
-        }
-
-        function hideWelcomeScreen() {
-            document.getElementById('welcome-screen').style.display = 'none';
-            if (state.monacoEditor) {
-                document.getElementById('monaco-editor').style.display = 'block';
-            }
-        }
-
-        // Template System
-        function createFromTemplate(templateName) {
-            const template = templates[templateName];
-            if (!template) return;
-            
-            // Clear existing files
-            state.files = {};
-            state.openTabs = [];
-            state.activeTab = null;
-            
-            // Add template files
-            Object.entries(template.files).forEach(([filename, content]) => {
-                state.files[filename] = content;
-            });
-            
-            // Open the first file
-            const firstFile = Object.keys(template.files)[0];
-            if (firstFile) {
-                openFile(firstFile);
-            }
-            
-            renderFileExplorer();
-            updatePreview();
-        }
-
-        // Preview System
-        function updatePreview() {
-            // This would update a preview iframe if implemented
-            console.log('Preview updated');
-        }
-
-        // AI Integration
-        async function sendToAI(message, tool = null) {
-            if (!state.apiKey) {
-                addMessage('Please set your API key in settings', 'ai');
-                return;
+                // Update placeholder based on tool
+                const input = document.getElementById('ai-input');
+                const placeholders = {
+                    general: 'Ask me anything about coding...',
+                    code: 'Tell me what code to write...\nExample: "Create a React todo component"',
+                    debug: 'Describe the bug or paste your code...',
+                    refactor: 'Paste the code you want to refactor...',
+                    explain: 'Paste the code you want explained...',
+                    optimize: 'Paste the code you want to optimize...'
+                };
+                input.placeholder = placeholders[toolType];
             }
 
-            addMessage(message, 'user');
-            
-            try {
-                const context = tool ? getContextForTool(tool) : '';
-                const fullPrompt = `${context}\n\nUser: ${message}`;
+            // AI Command Execution
+            async executeAICommand() {
+                const input = document.getElementById('ai-input');
+                const command = input.value.trim();
                 
-                const response = await callGeminiAPI(fullPrompt);
-                const parsedResponse = parseAIResponse(response);
+                if (!command || this.isProcessing) return;
+
+                this.isProcessing = true;
+                this.updateStatus('AI: Processing...');
                 
-                addMessage(parsedResponse.message, 'ai');
-                
-                if (parsedResponse.files) {
-                    parsedResponse.files.forEach(({ filename, content }) => {
-                        state.files[filename] = content;
-                        if (!state.activeTab) {
-                            openFile(filename);
-                        }
-                    });
-                    renderFileExplorer();
-                    updatePreview();
-                }
-                
-            } catch (error) {
-                addMessage(`Error: ${error.message}`, 'ai');
-            }
-        }
-
-        function getContextForTool(tool) {
-            const contexts = {
-                code: 'You are a coding assistant. Help write clean, efficient code.',
-                debug: 'You are a debugging expert. Help find and fix code issues.',
-                refactor: 'You are a refactoring specialist. Help improve code structure.',
-                explain: 'You are a code explainer. Help understand how code works.',
-                optimize: 'You are a performance expert. Help optimize code efficiency.',
-                test: 'You are a testing expert. Help write comprehensive tests.'
-            };
-            
-            let context = contexts[tool] || '';
-            
-            if (state.activeTab && state.files[state.activeTab]) {
-                context += `\n\nCurrent file (${state.activeTab}):\n${state.files[state.activeTab]}`;
-            }
-            
-            return context;
-        }
-
-        async function callGeminiAPI(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${state.aiModel}:generateContent?key=${state.apiKey}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        role: 'user',
-                        parts: [{ text: prompt }]
-                    }]
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        }
-
-        function parseAIResponse(response) {
-            const files = [];
-            const fileRegex = /```(\w+)?\s*\/\/\s*(\S+)\s*\n([\s\S]*?)```/g;
-            let match;
-            
-            while ((match = fileRegex.exec(response)) !== null) {
-                files.push({
-                    filename: match[2],
-                    content: match[3].trim()
-                });
-            }
-            
-            const message = response.replace(fileRegex, '').trim();
-            
-            return { message, files };
-        }
-
-        function addMessage(content, sender) {
-            const messagesContainer = document.getElementById('chat-messages');
-            const message = document.createElement('div');
-            message.className = `message ${sender}`;
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            
-            if (sender === 'ai') {
-                messageContent.innerHTML = marked.parse(content);
-            } else {
-                messageContent.textContent = content;
-            }
-            
-            message.appendChild(messageContent);
-            messagesContainer.appendChild(message);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize editors
-            initializeMonacoEditor();
-            initializeTerminal();
-            
-            // Navigation
-            document.querySelectorAll('[data-view]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const view = e.target.dataset.view;
-                    document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    
-                    if (view === 'terminal') {
-                        document.getElementById('terminal-panel').classList.add('open');
-                    } else {
-                        document.getElementById('terminal-panel').classList.remove('open');
-                    }
-                });
-            });
-            
-            // Sidebar tabs
-            document.querySelectorAll('.sidebar-tab').forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    const tabName = e.target.dataset.tab;
-                    
-                    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                    
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.add('hidden');
-                    });
-                    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-                });
-            });
-            
-            // AI Panel
-            document.getElementById('toggle-ai').addEventListener('click', () => {
-                document.getElementById('ai-panel').classList.toggle('open');
-            });
-            
-            document.getElementById('close-ai').addEventListener('click', () => {
-                document.getElementById('ai-panel').classList.remove('open');
-            });
-            
-            // AI Tools
-            document.querySelectorAll('.ai-tool').forEach(tool => {
-                tool.addEventListener('click', (e) => {
-                    document.querySelectorAll('.ai-tool').forEach(t => t.classList.remove('active'));
-                    e.target.classList.add('active');
-                });
-            });
-            
-            // Chat
-            document.getElementById('send-btn').addEventListener('click', () => {
-                const input = document.getElementById('chat-input');
-                const message = input.value.trim();
-                if (message) {
-                    const activeTool = document.querySelector('.ai-tool.active')?.dataset.tool;
-                    sendToAI(message, activeTool);
+                try {
+                    const result = await this.callAI(command);
+                    await this.processAIResult(result);
+                    this.showNotification('AI command executed successfully', 'success');
+                } catch (error) {
+                    this.showNotification(`AI Error: ${error.message}`, 'error');
+                } finally {
+                    this.isProcessing = false;
+                    this.updateStatus('AI: Ready');
                     input.value = '';
                 }
-            });
-            
-            document.getElementById('chat-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    document.getElementById('send-btn').click();
-                }
-            });
-            
-            // File operations
-            document.getElementById('new-file-btn').addEventListener('click', () => {
-                const filename = prompt('Enter filename:');
-                if (filename) {
-                    createFile(filename);
-                }
-            });
-            
-            // Templates
-            document.querySelectorAll('.template-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    const template = e.currentTarget.dataset.template;
-                    createFromTemplate(template);
+            }
+
+            async callAI(prompt) {
+                const contextPrompt = this.buildContextPrompt(prompt);
+                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.aiModel}:generateContent?key=${this.apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: 'user',
+                            parts: [{ text: contextPrompt }]
+                        }]
+                    })
                 });
-            });
-            
-            // Welcome screen
-            document.getElementById('create-project').addEventListener('click', () => {
-                document.querySelector('.sidebar-tab[data-tab="templates"]').click();
-            });
-            
-            document.getElementById('open-ai-chat').addEventListener('click', () => {
-                document.getElementById('toggle-ai').click();
-            });
-            
-            // Terminal
-            document.getElementById('close-terminal').addEventListener('click', () => {
-                document.getElementById('terminal-panel').classList.remove('open');
-            });
-            
-            // Sidebar toggle
-            document.getElementById('toggle-sidebar').addEventListener('click', () => {
-                document.querySelector('.sidebar').classList.toggle('collapsed');
-            });
-            
-            // Git commands
-            document.getElementById('git-init').addEventListener('click', () => {
-                addMessage('Git repository initialized', 'ai');
-            });
-            
-            document.getElementById('git-add').addEventListener('click', () => {
-                if (state.terminal) {
-                    state.terminal.writeln('git add .');
-                    state.terminal.writeln('Changes staged for commit');
-                    state.terminal.write('$ ');
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
                 }
-            });
-            
-            document.getElementById('git-commit').addEventListener('click', () => {
-                const message = document.getElementById('commit-msg').value;
-                if (message && state.terminal) {
-                    state.terminal.writeln(`git commit -m "${message}"`);
-                    state.terminal.writeln(`[main] ${message}`);
-                    state.terminal.write('$ ');
-                    document.getElementById('commit-msg').value = '';
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            }
+
+            buildContextPrompt(userPrompt) {
+                let context = `You are CodeForge AI, a professional coding assistant. Your job is to help developers by writing code directly to files.
+
+IMPORTANT RULES:
+1. NEVER show code in chat responses
+2. ALWAYS write code directly to files using the [FILE:filename] syntax
+3. Create complete, working files
+4. Use modern best practices
+5. Add helpful comments
+
+Current context:
+- AI Tool: ${this.aiTools[this.currentAITool]}
+- Active file: ${this.activeTab || 'none'}
+- Project files: ${Object.keys(this.files).join(', ') || 'none'}
+
+When creating files, use this exact syntax:
+[FILE:filename.ext]
+// Your code here
+[/FILE]
+
+You can create multiple files in one response.
+
+Current file content (if editing):`;
+
+                if (this.activeTab && this.files[this.activeTab]) {
+                    context += `\n\n${this.activeTab}:\n${this.files[this.activeTab]}`;
                 }
-            });
+
+                context += `\n\nUser Request: ${userPrompt}`;
+
+                return context;
+            }
+
+            async processAIResult(aiResponse) {
+                // Extract files from AI response
+                const fileRegex = /\[FILE:([^\]]+)\]\s*([\s\S]*?)\s*\[\/FILE\]/g;
+                let match;
+                let filesCreated = 0;
+
+                while ((match = fileRegex.exec(aiResponse)) !== null) {
+                    const filename = match[1].trim();
+                    const content = match[2].trim();
+                    
+                    this.files[filename] = content;
+                    filesCreated++;
+                    
+                    // Open the first file created
+                    if (filesCreated === 1) {
+                        this.openFile(filename);
+                    }
+                }
+
+                if (filesCreated > 0) {
+                    this.renderFileTree();
+                    this.updateStatus(`AI: Created ${filesCreated} file(s)`);
+                } else {
+                    // If no files were created, show a brief message
+                    const cleanResponse = aiResponse.replace(fileRegex, '').trim();
+                    if (cleanResponse) {
+                        this.showNotification(cleanResponse.substring(0, 100) + '...', 'success');
+                    }
+                }
+            }
+
+            // File Management
+            createNewFile(name = null) {
+                const filename = name || prompt('Enter filename:');
+                if (!filename) return;
+
+                this.files[filename] = '';
+                this.openFile(filename);
+                this.renderFileTree();
+            }
+
+            createNewFolder(name = null) {
+                const foldername = name || prompt('Enter folder name:');
+                if (!foldername) return;
+                
+                // For simplicity, we'll create a folder by adding a .gitkeep file
+                this.files[`${foldername}/.gitkeep`] = '';
+                this.renderFileTree();
+            }
+
+            openFile(filename) {
+                if (!this.files.hasOwnProperty(filename)) return;
+
+                // Add to open tabs if not already open
+                if (!this.openTabs.includes(filename)) {
+                    this.openTabs.push(filename);
+                }
+
+                this.activeTab = filename;
+                this.renderTabs();
+                this.hideWelcomeScreen();
+
+                // Set editor content
+                if (this.monacoEditor) {
+                    const language = this.getLanguageFromFilename(filename);
+                    const model = monaco.editor.createModel(this.files[filename], language);
+                    this.monacoEditor.setModel(model);
+                }
+
+                this.updateUI();
+            }
+
+            closeFile(filename) {
+                const index = this.openTabs.indexOf(filename);
+                if (index > -1) {
+                    this.openTabs.splice(index, 1);
+                }
+
+                if (this.activeTab === filename) {
+                    this.activeTab = this.openTabs.length > 0 ? this.openTabs[this.openTabs.length - 1] : null;
+                    
+                    if (this.activeTab) {
+                        this.openFile(this.activeTab);
+                    } else {
+                        this.showWelcomeScreen();
+                    }
+                }
+
+                this.renderTabs();
+                this.updateUI();
+            }
+
+            getLanguageFromFilename(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const langMap = {
+                    'js': 'javascript',
+                    'jsx': 'javascript',
+                    'ts': 'typescript',
+                    'tsx': 'typescript',
+                    'html': 'html',
+                    'css': 'css',
+                    'scss': 'scss',
+                    'sass': 'sass',
+                    'json': 'json',
+                    'md': 'markdown',
+                    'py': 'python',
+                    'java': 'java',
+                    'cpp': 'cpp',
+                    'c': 'c',
+                    'go': 'go',
+                    'rs': 'rust',
+                    'php': 'php',
+                    'rb': 'ruby',
+                    'vue': 'html',
+                    'yml': 'yaml',
+                    'yaml': 'yaml'
+                };
+                return langMap[ext] || 'plaintext';
+            }
+
+            // Template System
+            async createFromTemplate(templateName) {
+                this.updateStatus('AI: Creating project...');
+                
+                const templates = {
+                    react: `Create a modern React application with:
+- index.html with React CDN
+- App.js with functional component and hooks
+- style.css with modern styling
+- Include a counter example
+- Use Tailwind CSS`,
+                    
+                    vue: `Create a Vue 3 application with:
+- index.html with Vue 3 CDN
+- app.js with Composition API
+- style.css with modern styling
+- Include a reactive counter example`,
+                    
+                    nextjs: `Create a Next.js project structure with:
+- pages/index.js with homepage
+- pages/api/hello.js with API route
+- components/Layout.js
+- styles/globals.css
+- package.json with dependencies`,
+                    
+                    express: `Create an Express.js API with:
+- server.js with Express setup
+- routes/users.js with CRUD operations
+- middleware/auth.js
+- package.json with dependencies
+- README.md with setup instructions`,
+                    
+                    static: `Create a static website with:
+- index.html with modern HTML5 structure
+- style.css with responsive design
+- script.js with interactive features
+- Include navigation and sections`,
+                    
+                    'discord-bot': `Create a Discord bot with:
+- index.js with bot setup
+- commands/ping.js command
+- config.json for settings
+- package.json with discord.js
+- README.md with setup guide`
+                };
+
+                try {
+                    await this.callAI(templates[templateName]);
+                    this.projectType = templateName;
+                    this.showNotification(`${templateName} project created!`, 'success');
+                } catch (error) {
+                    this.showNotification(`Error creating template: ${error.message}`, 'error');
+                }
+            }
+
+            // UI Rendering
+            renderFileTree() {
+                const fileTree = document.getElementById('file-tree');
+                fileTree.innerHTML = '';
+
+                const files = Object.keys(this.files).sort();
+                
+                files.forEach(filename => {
+                    const item = document.createElement('div');
+                    item.className = 'tree-item';
+                    if (filename === this.activeTab) {
+                        item.classList.add('active');
+                    }
+
+                    const icon = this.getFileIcon(filename);
+                    item.innerHTML = `
+                        <i class="icon ${icon}"></i>
+                        <span class="name">${filename}</span>
+                    `;
+
+                    item.addEventListener('click', () => this.openFile(filename));
+                    fileTree.appendChild(item);
+                });
+
+                this.updateStatus(`${files.length} files`);
+            }
+
+            renderTabs() {
+                const tabsContainer = document.getElementById('editor-tabs');
+                tabsContainer.innerHTML = '';
+
+                this.openTabs.forEach(filename => {
+                    const tab = document.createElement('div');
+                    tab.className = 'editor-tab';
+                    if (filename === this.activeTab) {
+                        tab.classList.add('active');
+                    }
+
+                    const icon = this.getFileIcon(filename);
+                    tab.innerHTML = `
+                        <i class="icon ${icon}"></i>
+                        <span class="name">${filename}</span>
+                        <i class="close fas fa-times"></i>
+                    `;
+
+                    tab.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('fa-times')) {
+                            e.stopPropagation();
+                            this.closeFile(filename);
+                        } else {
+                            this.openFile(filename);
+                        }
+                    });
+
+                    tabsContainer.appendChild(tab);
+                });
+            }
+
+            getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const iconMap = {
+                    'html': 'fab fa-html5',
+                    'css': 'fab fa-css3-alt',
+                    'js': 'fab fa-js-square',
+                    'jsx': 'fab fa-react',
+                    'ts': 'fas fa-code',
+                    'tsx': 'fab fa-react',
+                    'vue': 'fab fa-vuejs',
+                    'json': 'fas fa-brackets-curly',
+                    'md': 'fab fa-markdown',
+                    'py': 'fab fa-python',
+                    'java': 'fab fa-java',
+                    'php': 'fab fa-php',
+                    'rb': 'fas fa-gem',
+                    'go': 'fas fa-code',
+                    'rs': 'fas fa-code',
+                    'yml': 'fas fa-cog',
+                    'yaml': 'fas fa-cog'
+                };
+                return iconMap[ext] || 'fas fa-file';
+            }
+
+            // UI State Management
+            showWelcomeScreen() {
+                document.getElementById('welcome-screen').style.display = 'flex';
+                document.getElementById('monaco-editor').style.display = 'none';
+            }
+
+            hideWelcomeScreen() {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('monaco-editor').style.display = 'block';
+            }
+
+            updateUI() {
+                this.renderFileTree();
+                this.renderTabs();
+                this.updateStatusBar();
+            }
+
+            updateStatusBar() {
+                const filesCount = Object.keys(this.files).length;
+                document.getElementById('status-files').textContent = `${filesCount} files`;
+                
+                if (this.activeTab) {
+                    const language = this.getLanguageFromFilename(this.activeTab);
+                    document.getElementById('status-language').textContent = language;
+                    
+                    if (this.monacoEditor) {
+                        const position = this.monacoEditor.getPosition();
+                        document.getElementById('status-line').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+                    }
+                } else {
+                    document.getElementById('status-language').textContent = 'Plain Text';
+                    document.getElementById('status-line').textContent = 'Ln 1, Col 1';
+                }
+
+                if (this.projectType) {
+                    document.getElementById('status-project').textContent = `Project: ${this.projectType}`;
+                } else {
+                    document.getElementById('status-project').textContent = 'No project';
+                }
+            }
+
+            updateStatus(message) {
+                document.getElementById('status-ai').textContent = message;
+            }
+
+            updateTabModified(filename, modified) {
+                const tab = document.querySelector(`[data-filename="${filename}"]`);
+                if (tab) {
+                    if (modified) {
+                        tab.classList.add('modified');
+                    } else {
+                        tab.classList.remove('modified');
+                    }
+                }
+            }
+
+            // Notifications
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 100);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Context Menu
+            showContextMenu(event, element) {
+                const contextMenu = document.getElementById('context-menu');
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = event.pageX + 'px';
+                contextMenu.style.top = event.pageY + 'px';
+            }
+
+            hideContextMenu() {
+                document.getElementById('context-menu').style.display = 'none';
+            }
+
+            // Keyboard Shortcuts
+            handleKeyboardShortcuts(event) {
+                if (event.ctrlKey || event.metaKey) {
+                    switch (event.key) {
+                        case 'n':
+                            event.preventDefault();
+                            this.createNewFile();
+                            break;
+                        case 's':
+                            event.preventDefault();
+                            // Save would be implemented here
+                            this.showNotification('File saved', 'success');
+                            break;
+                        case 'w':
+                            event.preventDefault();
+                            if (this.activeTab) {
+                                this.closeFile(this.activeTab);
+                            }
+                            break;
+                        case '`':
+                            event.preventDefault();
+                            this.switchPanel('ai');
+                            break;
+                    }
+                }
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.codeForgeAI = new CodeForgeAI();
         });
     </script>
 </body>
