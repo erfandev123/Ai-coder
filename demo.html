@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Pro AI - Demo & Features</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0f0f23;
+            --secondary-bg: #1a1a2e;
+            --accent-color: #4f46e5;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .demo-section p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-color), #6366f1);
+            border-radius: 20px;
+            padding: 50px;
+            margin-top: 60px;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: white;
+            color: var(--accent-color);
+            padding: 18px 40px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .code-example {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .code-example pre {
+            color: #f8f8f2;
+            font-family: 'Fira Code', monospace;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, var(--accent-color), #6366f1);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-section {
+                padding: 25px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> Gemini Pro AI Demo</h1>
+            <p>Experience the power of AI-driven chat and code generation with Google's latest Gemini Pro model</p>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="demo-section">
+            <h2><i class="fas fa-star"></i> Key Features</h2>
+            <p>This powerful AI application combines conversational AI with advanced code generation capabilities, making it perfect for developers, students, and professionals.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-comments"></i> Intelligent Chat</h3>
+                    <p>Powered by Gemini Pro AI for natural, context-aware conversations with markdown support and code highlighting.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-code"></i> Code Generation</h3>
+                    <p>Generate production-ready code in 14+ programming languages with framework support and complexity options.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-mobile-alt"></i> Responsive Design</h3>
+                    <p>Beautiful, modern UI that works seamlessly on desktop, tablet, and mobile devices.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-shield-alt"></i> Safety & Privacy</h3>
+                    <p>Built-in content filtering, secure API communication, and privacy-focused design.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Mode Demo -->
+        <div class="demo-section">
+            <h2><i class="fas fa-comments"></i> Chat Mode Demo</h2>
+            <p>Experience natural conversations with AI that understands context and provides intelligent responses.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-brain"></i> Context Awareness</h3>
+                    <p>Maintains conversation history for coherent, contextual responses that build upon previous interactions.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-markdown"></i> Markdown Support</h3>
+                    <p>Rich text formatting with automatic code syntax highlighting for better readability and presentation.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-bolt"></i> Real-time Responses</h3>
+                    <p>Fast, responsive AI interactions with loading states and smooth animations for a professional feel.</p>
+                </div>
+            </div>
+
+            <div class="code-example">
+                <pre><code>// Example conversation flow
+User: "How do I create a React component?"
+AI: "Here's how to create a React component:
+
+```jsx
+import React from 'react';
+
+function MyComponent() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello World!&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MyComponent;
+```
+
+This creates a functional component that renders 'Hello World!'..."</code></pre>
+            </div>
+        </div>
+
+        <!-- Code Generation Demo -->
+        <div class="demo-section">
+            <h2><i class="fas fa-code"></i> Code Generation Demo</h2>
+            <p>Generate professional, production-ready code with customizable options and comprehensive features.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-language"></i> Multi-Language Support</h3>
+                    <p>Generate code in JavaScript, Python, Java, C++, C#, PHP, Ruby, Go, Rust, Swift, Kotlin, TypeScript, HTML/CSS, and SQL.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-cogs"></i> Framework Integration</h3>
+                    <p>Built-in support for popular frameworks like React, Vue.js, Angular, Node.js, Django, Flask, Spring Boot, and more.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-layer-group"></i> Complexity Levels</h3>
+                    <p>Choose from Simple, Medium, Complex, or Expert Level code generation based on your needs and skill level.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-vial"></i> Test Generation</h3>
+                    <p>Optional unit test generation to ensure code quality and reliability for your projects.</p>
+                </div>
+            </div>
+
+            <div class="code-example">
+                <pre><code>// Example code generation request
+Description: "Create a React todo list component with add, delete, and mark complete functionality"
+
+Options:
+- Language: JavaScript
+- Framework: React
+- Complexity: Medium
+- Include Tests: Yes
+
+Generated Output:
+- Complete React component
+- State management with hooks
+- CRUD operations
+- Unit tests
+- Error handling
+- Best practices</code></pre>
+            </div>
+        </div>
+
+        <!-- Technical Features -->
+        <div class="demo-section">
+            <h2><i class="fas fa-cogs"></i> Technical Features</h2>
+            <p>Built with modern web technologies and best practices for optimal performance and user experience.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-rocket"></i> Performance</h3>
+                    <p>Optimized API calls, efficient DOM manipulation, and smart caching for lightning-fast responses.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-lock"></i> Security</h3>
+                    <p>Secure API key handling, content filtering, and HTTPS communication for safe AI interactions.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-palette"></i> Customization</h3>
+                    <p>Easy-to-modify CSS variables, themes, and responsive breakpoints for personalized experiences.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-globe"></i> Browser Support</h3>
+                    <p>Compatible with Chrome 80+, Firefox 75+, Safari 13+, and Edge 80+ for broad accessibility.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="demo-section">
+            <h2><i class="fas fa-lightbulb"></i> Use Cases</h2>
+            <p>Discover how this AI application can benefit different user groups and scenarios.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-user-tie"></i> For Developers</h3>
+                    <p>Rapid prototyping, code generation, problem-solving assistance, and learning new technologies quickly.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-graduation-cap"></i> For Students</h3>
+                    <p>Homework help, project ideas, code examples, and AI-powered tutoring for programming concepts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-briefcase"></i> For Professionals</h3>
+                    <p>Documentation generation, code review assistance, architecture discussions, and best practice guidance.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <h3><i class="fas fa-users"></i> For Teams</h3>
+                    <p>Collaborative coding, knowledge sharing, and consistent code standards across development teams.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section">
+            <h2>Ready to Experience the Future of AI?</h2>
+            <p>Start chatting with Gemini Pro AI and generate professional code in seconds!</p>
+            <a href="gemini-ai-chat.html" class="cta-btn">
+                <i class="fas fa-rocket"></i> Launch Application
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate feature cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+
+            // Add click effects to feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+
+            console.log('🚀 Gemini Pro AI Demo Page Loaded!');
+            console.log('💡 Explore the features and launch the main application');
+        });
+    </script>
+</body>
+</html>

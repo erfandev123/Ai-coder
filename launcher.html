@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Pro AI - Application Launcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-bg: #0f0f23;
+            --secondary-bg: #1a1a2e;
+            --accent-color: #4f46e5;
+            --accent-hover: #6366f1;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .launcher-container {
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .app-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        .app-card.primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            border-color: var(--accent-color);
+        }
+
+        .app-card.primary:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(79, 70, 229, 0.4);
+        }
+
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .app-card.primary .app-icon {
+            color: white;
+        }
+
+        .app-card:not(.primary) .app-icon {
+            color: var(--accent-color);
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .app-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .app-card.primary .app-description {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .app-features {
+            list-style: none;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-features li {
+            padding: 5px 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .app-card.primary .app-features li {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .app-features li::before {
+            content: "✓ ";
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .app-card.primary .app-features li::before {
+            color: white;
+        }
+
+        .launch-btn {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .launch-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .app-card.primary .launch-btn {
+            background: white;
+            color: var(--accent-color);
+        }
+
+        .app-card.primary .launch-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .launcher-container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation for cards */
+        .app-card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .app-card:nth-child(1) { animation-delay: 0.1s; }
+        .app-card:nth-child(2) { animation-delay: 0.2s; }
+        .app-card:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="launcher-container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-rocket"></i> Gemini Pro AI</h1>
+            <p>Choose your AI experience - Chat with AI or explore the features</p>
+        </div>
+
+        <!-- Application Grid -->
+        <div class="app-grid">
+            <!-- Main Application -->
+            <a href="gemini-ai-chat.html" class="app-card primary">
+                <i class="fas fa-robot app-icon"></i>
+                <h3 class="app-title">Launch AI Chat</h3>
+                <p class="app-description">
+                    Start chatting with Gemini Pro AI and generate professional code instantly. 
+                    The main application with full chat and code generation capabilities.
+                </p>
+                <ul class="app-features">
+                    <li>Intelligent AI conversations</li>
+                    <li>Code generation in 14+ languages</li>
+                    <li>Framework support & best practices</li>
+                    <li>Modern, responsive UI</li>
+                </ul>
+                <span class="launch-btn">Launch Now</span>
+            </a>
+
+            <!-- Demo Page -->
+            <a href="demo.html" class="app-card">
+                <i class="fas fa-play-circle app-icon"></i>
+                <h3 class="app-title">View Demo</h3>
+                <p class="app-description">
+                    Explore the features and capabilities of the Gemini Pro AI application. 
+                    Learn about chat mode, code generation, and technical features.
+                </p>
+                <ul class="app-features">
+                    <li>Feature overview</li>
+                    <li>Use case examples</li>
+                    <li>Technical details</li>
+                    <li>Interactive showcase</li>
+                </ul>
+                <span class="launch-btn">View Demo</span>
+            </a>
+
+            <!-- Documentation -->
+            <a href="README.md" class="app-card">
+                <i class="fas fa-book app-icon"></i>
+                <h3 class="app-title">Documentation</h3>
+                <p class="app-description">
+                    Comprehensive documentation with setup instructions, usage examples, 
+                    and technical details for developers and users.
+                </p>
+                <ul class="app-features">
+                    <li>Setup instructions</li>
+                    <li>API documentation</li>
+                    <li>Customization guide</li>
+                    <li>FAQ & support</li>
+                </ul>
+                <span class="launch-btn">Read Docs</span>
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <strong>Gemini Pro AI</strong> - Powered by Google's latest AI model | 
+                <a href="https://ai.google.dev/" target="_blank">Learn More</a>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                Built with ❤️ using modern web technologies
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click effects
+            document.querySelectorAll('.app-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    // Add a subtle click effect
+                    card.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        card.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // Console welcome message
+            console.log('🚀 Gemini Pro AI Launcher Loaded!');
+            console.log('💡 Choose your AI experience:');
+            console.log('   - Launch AI Chat: Main application');
+            console.log('   - View Demo: Feature showcase');
+            console.log('   - Documentation: Setup & usage guide');
+            
+            // Add some interactive elements
+            document.querySelectorAll('.app-card').forEach((card, index) => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.zIndex = '10';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.zIndex = '1';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
