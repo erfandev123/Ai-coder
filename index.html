@@ -2,500 +2,800 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeForge AI - Professional Coding Agent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AI CodeStudio - Mobile Coding Agent</title>
     
-    <!-- Monaco Editor -->
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Marked for markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Highlight.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     
     <style>
         :root {
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --bg-tertiary: #21262d;
-            --bg-quaternary: #30363d;
-            --border-primary: #30363d;
-            --border-secondary: #21262d;
-            --text-primary: #f0f6fc;
-            --text-secondary: #8b949e;
-            --text-tertiary: #7d8590;
-            --accent-blue: #58a6ff;
-            --accent-green: #3fb950;
-            --accent-orange: #ff8c42;
-            --accent-red: #f85149;
-            --accent-purple: #a5a2ff;
-            --shadow: 0 8px 24px rgba(0,0,0,0.15);
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --tertiary-bg: #0f3460;
+            --accent-color: #e94560;
+            --accent-blue: #00d4ff;
+            --accent-green: #39ff14;
+            --accent-purple: #9d4edd;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --text-muted: #6b7280;
+            --border-color: #374151;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
-            font-size: 13px;
+            touch-action: pan-x pan-y;
+            user-select: none;
         }
 
-        /* Main Layout */
+        /* Mobile App Container */
         .app-container {
             display: flex;
+            flex-direction: column;
             height: 100vh;
-            flex-direction: column;
+            position: relative;
         }
 
-        /* Title Bar */
-        .title-bar {
-            height: 32px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-primary);
+        /* Top Header */
+        .top-header {
+            height: 60px;
+            background: linear-gradient(135deg, var(--tertiary-bg) 0%, var(--secondary-bg) 100%);
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 12px;
-            color: var(--text-secondary);
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 100;
         }
 
-        /* Main Layout */
-        .main-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Activity Bar */
-        .activity-bar {
-            width: 48px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 0;
-        }
-
-        .activity-item {
-            width: 32px;
-            height: 32px;
+        .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 18px;
         }
 
-        .activity-item:hover,
-        .activity-item.active {
-            background: var(--bg-tertiary);
+        .logo .icon {
+            font-size: 24px;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
             color: var(--text-primary);
-        }
-
-        .activity-item.active {
-            border-left: 2px solid var(--accent-blue);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-primary);
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s ease;
-        }
-
-        .sidebar.collapsed {
-            width: 0;
-            overflow: hidden;
-        }
-
-        .sidebar-header {
-            height: 40px;
-            padding: 0 16px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid var(--border-primary);
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-        }
-
-        .sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        /* File Explorer */
-        .file-tree {
-            padding: 8px 0;
-        }
-
-        .tree-item {
-            display: flex;
-            align-items: center;
-            padding: 4px 8px 4px 16px;
+            justify-content: center;
             cursor: pointer;
-            font-size: 13px;
-            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .tree-item:hover {
-            background: var(--bg-tertiary);
+        .header-btn:active {
+            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .tree-item.active {
-            background: var(--bg-quaternary);
-            color: var(--accent-blue);
-        }
-
-        .tree-item .icon {
-            width: 16px;
-            margin-right: 8px;
-            font-size: 12px;
-        }
-
-        .tree-item .name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Editor Area */
-        .editor-area {
+        /* Main Content Area */
+        .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--bg-primary);
-        }
-
-        .editor-tabs {
-            height: 36px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-primary);
-            display: flex;
-            overflow-x: auto;
-        }
-
-        .editor-tab {
-            min-width: 120px;
-            height: 36px;
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-            background: var(--bg-tertiary);
-            border-right: 1px solid var(--border-primary);
-            cursor: pointer;
-            font-size: 12px;
-            position: relative;
-        }
-
-        .editor-tab.active {
-            background: var(--bg-primary);
-            border-bottom: 2px solid var(--accent-blue);
-        }
-
-        .editor-tab .icon {
-            width: 12px;
-            margin-right: 6px;
-        }
-
-        .editor-tab .close {
-            margin-left: auto;
-            padding: 2px;
-            border-radius: 2px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .editor-tab:hover .close {
-            opacity: 1;
-        }
-
-        .editor-tab .close:hover {
-            background: var(--bg-quaternary);
-        }
-
-        .editor-container {
-            flex: 1;
-            position: relative;
             overflow: hidden;
         }
 
-        /* AI Panel */
-        .ai-panel {
-            width: 350px;
-            background: var(--bg-secondary);
-            border-left: 1px solid var(--border-primary);
+        /* Page System */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            transition: width 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(100%);
+            background: var(--primary-bg);
         }
 
-        .ai-panel.collapsed {
-            width: 0;
-            overflow: hidden;
+        .page.active {
+            transform: translateX(0);
         }
 
-        .ai-header {
-            height: 40px;
-            padding: 0 16px;
+        .page.prev {
+            transform: translateX(-100%);
+        }
+
+        /* AI Chat Page */
+        .ai-chat-page {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: var(--secondary-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ai-status {
             display: flex;
             align-items: center;
-            border-bottom: 1px solid var(--border-primary);
-            font-weight: 600;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
-        .ai-tools {
-            padding: 12px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .ai-tools-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            border-bottom: 1px solid var(--border-primary);
+            gap: 10px;
+            margin-top: 15px;
         }
 
-        .ai-tool {
-            padding: 8px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: 6px;
+        .ai-tool-card {
+            background: var(--tertiary-bg);
+            border-radius: 12px;
+            padding: 15px;
             text-align: center;
             cursor: pointer;
-            font-size: 10px;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
 
-        .ai-tool:hover {
-            background: var(--bg-quaternary);
-            border-color: var(--accent-blue);
+        .ai-tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .ai-tool.active {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: white;
+        .ai-tool-card.active::before {
+            opacity: 0.1;
         }
 
-        .ai-tool .emoji {
-            font-size: 16px;
-        }
-
-        .ai-commands {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-        }
-
-        .command-input {
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: var(--text-primary);
-            font-size: 12px;
-            outline: none;
-            resize: none;
-            min-height: 60px;
-            font-family: inherit;
-        }
-
-        .command-input:focus {
-            border-color: var(--accent-blue);
-        }
-
-        .command-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: var(--accent-blue);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #4493f8;
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-quaternary);
-        }
-
-        /* Status Bar */
-        .status-bar {
-            height: 24px;
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-primary);
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .status-item {
-            margin-right: 16px;
-            cursor: pointer;
-        }
-
-        .status-item:hover {
-            color: var(--text-primary);
-        }
-
-        /* Welcome Screen */
-        .welcome-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 40px;
-        }
-
-        .welcome-logo {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .welcome-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
-
-        .welcome-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Project Templates */
-        .template-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            padding: 16px;
-        }
-
-        .template-card {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: 8px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .template-card:hover {
+        .ai-tool-card.active {
             border-color: var(--accent-blue);
             transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
 
-        .template-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+        .ai-tool-card .emoji {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
         }
 
-        .template-name {
+        .ai-tool-card .label {
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-purple));
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+        }
+
+        .message-content {
+            background: var(--secondary-bg);
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 14px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-purple));
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai .message-content {
+            background: var(--tertiary-bg);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 16px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: var(--secondary-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            background: var(--tertiary-bg);
+            border-radius: 25px;
+            padding: 12px 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .input-container.focused {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            line-height: 1.4;
+            resize: none;
+            outline: none;
+            min-height: 20px;
+            max-height: 100px;
+            font-family: inherit;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Files Page */
+        .files-page {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .files-header {
+            padding: 20px;
+            background: var(--secondary-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .files-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--tertiary-bg);
+            border: none;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+            background: var(--accent-blue);
+        }
+
+        .files-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .file-item:active {
+            background: var(--secondary-bg);
+        }
+
+        .file-item.active {
+            background: var(--tertiary-bg);
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: var(--secondary-bg);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Code Editor Page */
+        .editor-page {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            padding: 15px 20px;
+            background: var(--secondary-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .editor-tabs {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .editor-tab {
+            padding: 8px 12px;
+            background: var(--tertiary-bg);
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .editor-tab.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+            background: #1e1e1e;
+        }
+
+        .monaco-editor-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Templates Page */
+        .templates-page {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .templates-header {
+            padding: 20px;
+            background: var(--secondary-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .template-card {
+            background: var(--secondary-bg);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .template-card:active::before {
+            opacity: 0.1;
+        }
+
+        .template-card:active {
+            transform: scale(0.98);
+            border-color: var(--accent-blue);
+        }
+
+        .template-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .template-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
         }
 
         .template-desc {
-            font-size: 11px;
+            font-size: 12px;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            height: 70px;
+            background: var(--secondary-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            min-width: 50px;
+        }
+
+        .nav-item:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+        }
+
+        .nav-item .label {
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
             color: var(--text-secondary);
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .welcome-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .welcome-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .welcome-btn.primary {
+            background: linear-gradient(45deg, var(--accent-color), var(--accent-blue));
+            color: white;
+        }
+
+        .welcome-btn.secondary {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .welcome-btn:active {
+            transform: scale(0.98);
         }
 
         /* Notifications */
         .notification {
             position: fixed;
-            top: 20px;
+            top: 80px;
+            left: 20px;
             right: 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 6px;
-            padding: 12px 16px;
-            box-shadow: var(--shadow);
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             opacity: 0;
-            transform: translateX(100%);
+            transform: translateY(-20px);
             transition: all 0.3s ease;
         }
 
         .notification.show {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0);
         }
 
         .notification.success {
-            border-color: var(--accent-green);
+            border-left: 4px solid var(--success);
         }
 
         .notification.error {
-            border-color: var(--accent-red);
+            border-left: 4px solid var(--error);
         }
 
-        /* Loading */
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid var(--bg-quaternary);
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 46, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-blue);
             border-radius: 50%;
-            border-top: 2px solid var(--accent-blue);
             animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -503,324 +803,330 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Scrollbars */
+        /* Responsive Design */
+        @media (max-width: 360px) {
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .templates-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .ai-tools-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .visible {
+            display: block !important;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 4px;
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--bg-quaternary);
-            border-radius: 4px;
+            background: var(--accent-blue);
+            border-radius: 2px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--border-primary);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: absolute;
-                left: 48px;
-                top: 0;
-                bottom: 24px;
-                z-index: 100;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .ai-panel {
-                position: absolute;
-                right: 0;
-                top: 0;
-                bottom: 24px;
-                z-index: 100;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-            }
-
-            .ai-panel.open {
-                transform: translateX(0);
-            }
-        }
-
-        /* Context Menu */
-        .context-menu {
-            position: fixed;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 4px;
-            padding: 4px 0;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            display: none;
-        }
-
-        .context-menu-item {
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .context-menu-item:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .context-menu-separator {
-            height: 1px;
-            background: var(--border-primary);
-            margin: 4px 0;
+            background: var(--accent-color);
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Title Bar -->
-        <div class="title-bar">
-            <span>CodeForge AI - Professional Coding Agent</span>
-        </div>
-
-        <!-- Main Layout -->
-        <div class="main-layout">
-            <!-- Activity Bar -->
-            <div class="activity-bar">
-                <div class="activity-item active" data-panel="explorer" title="Explorer">
-                    <i class="fas fa-folder"></i>
-                </div>
-                <div class="activity-item" data-panel="search" title="Search">
-                    <i class="fas fa-search"></i>
-                </div>
-                <div class="activity-item" data-panel="git" title="Source Control">
-                    <i class="fab fa-git-alt"></i>
-                </div>
-                <div class="activity-item" data-panel="extensions" title="Extensions">
-                    <i class="fas fa-th-large"></i>
-                </div>
-                <div class="activity-item" data-panel="ai" title="AI Assistant">
-                    <i class="fas fa-robot"></i>
-                </div>
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="logo">
+                <i class="fas fa-rocket icon"></i>
+                <span>AI CodeStudio</span>
             </div>
+            <div class="header-actions">
+                <button class="header-btn" id="settings-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="header-btn" id="memory-btn" title="Memory">
+                    <i class="fas fa-brain"></i>
+                </button>
+            </div>
+        </header>
 
-            <!-- Sidebar -->
-            <div class="sidebar" id="sidebar">
-                <!-- Explorer Panel -->
-                <div class="panel-content" id="explorer-panel">
-                    <div class="sidebar-header">
-                        <span>Explorer</span>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- AI Chat Page -->
+            <div class="page active ai-chat-page" id="chat-page">
+                <div class="chat-header">
+                    <div class="ai-status">
+                        <div class="status-dot"></div>
+                        <span>AI Assistant Ready</span>
                         <div style="margin-left: auto;">
-                            <i class="fas fa-plus" title="New File" id="new-file-btn" style="cursor: pointer; margin-right: 8px;"></i>
-                            <i class="fas fa-folder-plus" title="New Folder" id="new-folder-btn" style="cursor: pointer;"></i>
+                            <span class="text-muted" id="conversation-count">0 conversations</span>
                         </div>
                     </div>
-                    <div class="sidebar-content">
-                        <div class="file-tree" id="file-tree">
-                            <!-- Files will be rendered here -->
+                    
+                    <div class="ai-tools-grid">
+                        <div class="ai-tool-card active" data-tool="general">
+                            <span class="emoji">💬</span>
+                            <span class="label">Chat</span>
+                        </div>
+                        <div class="ai-tool-card" data-tool="code">
+                            <span class="emoji">💻</span>
+                            <span class="label">Code</span>
+                        </div>
+                        <div class="ai-tool-card" data-tool="debug">
+                            <span class="emoji">🐛</span>
+                            <span class="label">Debug</span>
+                        </div>
+                        <div class="ai-tool-card" data-tool="refactor">
+                            <span class="emoji">♻️</span>
+                            <span class="label">Refactor</span>
+                        </div>
+                        <div class="ai-tool-card" data-tool="explain">
+                            <span class="emoji">📖</span>
+                            <span class="label">Explain</span>
+                        </div>
+                        <div class="ai-tool-card" data-tool="optimize">
+                            <span class="emoji">⚡</span>
+                            <span class="label">Optimize</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Templates Panel -->
-                <div class="panel-content hidden" id="templates-panel">
-                    <div class="sidebar-header">
-                        <span>Project Templates</span>
-                    </div>
-                    <div class="sidebar-content">
-                        <div class="template-grid">
-                            <div class="template-card" data-template="react">
-                                <div class="template-icon">⚛️</div>
-                                <div class="template-name">React App</div>
-                                <div class="template-desc">Modern React with hooks</div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message ai">
+                        <div class="message-avatar">🤖</div>
+                        <div>
+                            <div class="message-content">
+                                Hello! I'm your AI coding assistant. I can help you build complete applications, debug code, explain concepts, and much more. What would you like to create today?
                             </div>
-                            <div class="template-card" data-template="vue">
-                                <div class="template-icon">🟢</div>
-                                <div class="template-name">Vue App</div>
-                                <div class="template-desc">Vue 3 with Composition API</div>
-                            </div>
-                            <div class="template-card" data-template="nextjs">
-                                <div class="template-icon">▲</div>
-                                <div class="template-name">Next.js</div>
-                                <div class="template-desc">Full-stack React framework</div>
-                            </div>
-                            <div class="template-card" data-template="express">
-                                <div class="template-icon">🟢</div>
-                                <div class="template-name">Express API</div>
-                                <div class="template-desc">Node.js REST API</div>
-                            </div>
-                            <div class="template-card" data-template="static">
-                                <div class="template-icon">🌐</div>
-                                <div class="template-name">Static Site</div>
-                                <div class="template-desc">HTML, CSS, JavaScript</div>
-                            </div>
-                            <div class="template-card" data-template="discord-bot">
-                                <div class="template-icon">🤖</div>
-                                <div class="template-name">Discord Bot</div>
-                                <div class="template-desc">Node.js Discord bot</div>
-                            </div>
+                            <div class="message-time">Just now</div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="input-container" id="input-container">
+                        <textarea 
+                            class="chat-input" 
+                            id="chat-input" 
+                            placeholder="Ask me to build anything - web apps, games, APIs..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-btn" id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Editor Area -->
-            <div class="editor-area">
-                <!-- Editor Tabs -->
-                <div class="editor-tabs" id="editor-tabs">
-                    <!-- Tabs will be rendered here -->
+            <!-- Files Page -->
+            <div class="page files-page" id="files-page">
+                <div class="files-header">
+                    <h2>Project Files</h2>
+                    <div class="files-actions">
+                        <button class="action-btn" id="new-file-btn">
+                            <i class="fas fa-plus"></i>
+                            New File
+                        </button>
+                        <button class="action-btn" id="import-btn">
+                            <i class="fas fa-upload"></i>
+                            Import
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Editor Container -->
+                <div class="files-list" id="files-list">
+                    <div class="welcome-screen" id="files-welcome">
+                        <div class="welcome-icon">📁</div>
+                        <div class="welcome-title">No Files Yet</div>
+                        <div class="welcome-subtitle">Create your first file or use AI to generate code</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Editor Page -->
+            <div class="page editor-page" id="editor-page">
+                <div class="editor-header">
+                    <div class="editor-tabs" id="editor-tabs">
+                        <!-- Tabs will be added dynamically -->
+                    </div>
+                    <div class="editor-actions">
+                        <button class="header-btn" id="run-btn" title="Run Code">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="header-btn" id="save-btn" title="Save">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="editor-container">
-                    <!-- Monaco Editor -->
-                    <div id="monaco-editor" style="width: 100%; height: 100%; display: none;"></div>
+                    <div id="monaco-editor" class="monaco-editor-container"></div>
                     
-                    <!-- Welcome Screen -->
-                    <div class="welcome-screen" id="welcome-screen">
-                        <div class="welcome-logo">🚀</div>
-                        <div class="welcome-title">CodeForge AI</div>
-                        <div class="welcome-subtitle">Professional AI-Powered Coding Agent</div>
-                        <div class="welcome-actions">
-                            <button class="btn btn-primary" id="start-coding">Start Coding</button>
-                            <button class="btn btn-secondary" id="open-templates">Browse Templates</button>
-                        </div>
+                    <div class="welcome-screen" id="editor-welcome">
+                        <div class="welcome-icon">⚡</div>
+                        <div class="welcome-title">Code Editor</div>
+                        <div class="welcome-subtitle">Select a file to start editing</div>
                     </div>
                 </div>
             </div>
 
-            <!-- AI Panel -->
-            <div class="ai-panel" id="ai-panel">
-                <div class="ai-header">
-                    <span>AI Assistant</span>
-                    <div style="margin-left: auto;">
-                        <i class="fas fa-cog" title="Settings" style="cursor: pointer;"></i>
-                    </div>
+            <!-- Templates Page -->
+            <div class="page templates-page" id="templates-page">
+                <div class="templates-header">
+                    <h2>Project Templates</h2>
+                    <p class="text-secondary">Start with a professional template</p>
                 </div>
 
-                <!-- AI Tools -->
-                <div class="ai-tools">
-                    <div class="ai-tool active" data-tool="general">
-                        <div class="emoji">💬</div>
-                        <div>Chat</div>
+                <div class="templates-grid">
+                    <div class="template-card" data-template="react">
+                        <span class="template-icon">⚛️</span>
+                        <div class="template-title">React App</div>
+                        <div class="template-desc">Modern React with hooks</div>
                     </div>
-                    <div class="ai-tool" data-tool="code">
-                        <div class="emoji">💻</div>
-                        <div>Code</div>
-                    </div>
-                    <div class="ai-tool" data-tool="debug">
-                        <div class="emoji">🐛</div>
-                        <div>Debug</div>
-                    </div>
-                    <div class="ai-tool" data-tool="refactor">
-                        <div class="emoji">♻️</div>
-                        <div>Refactor</div>
-                    </div>
-                    <div class="ai-tool" data-tool="explain">
-                        <div class="emoji">📖</div>
-                        <div>Explain</div>
-                    </div>
-                    <div class="ai-tool" data-tool="optimize">
-                        <div class="emoji">⚡</div>
-                        <div>Optimize</div>
-                    </div>
-                </div>
 
-                <!-- AI Commands -->
-                <div class="ai-commands">
-                    <textarea 
-                        class="command-input" 
-                        id="ai-input" 
-                        placeholder="Tell me what you want to build or fix...
-Examples:
-• Create a todo app with React
-• Fix the bug in my JavaScript code
-• Add user authentication
-• Optimize this component
-• Explain how this function works"></textarea>
-                    
-                    <div class="command-buttons">
-                        <button class="btn btn-primary" id="execute-ai">
-                            <i class="fas fa-paper-plane"></i> Execute
-                        </button>
-                        <button class="btn btn-secondary" id="clear-input">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
+                    <div class="template-card" data-template="vue">
+                        <span class="template-icon">🟢</span>
+                        <div class="template-title">Vue App</div>
+                        <div class="template-desc">Vue 3 with Composition API</div>
+                    </div>
+
+                    <div class="template-card" data-template="nextjs">
+                        <span class="template-icon">▲</span>
+                        <div class="template-title">Next.js</div>
+                        <div class="template-desc">Full-stack React framework</div>
+                    </div>
+
+                    <div class="template-card" data-template="express">
+                        <span class="template-icon">🟢</span>
+                        <div class="template-title">Express API</div>
+                        <div class="template-desc">Node.js REST API</div>
+                    </div>
+
+                    <div class="template-card" data-template="static">
+                        <span class="template-icon">🌐</span>
+                        <div class="template-title">Static Site</div>
+                        <div class="template-desc">HTML, CSS, JavaScript</div>
+                    </div>
+
+                    <div class="template-card" data-template="discord-bot">
+                        <span class="template-icon">🤖</span>
+                        <div class="template-title">Discord Bot</div>
+                        <div class="template-desc">Node.js Discord bot</div>
+                    </div>
+
+                    <div class="template-card" data-template="game">
+                        <span class="template-icon">🎮</span>
+                        <div class="template-title">HTML5 Game</div>
+                        <div class="template-desc">Canvas-based game</div>
+                    </div>
+
+                    <div class="template-card" data-template="portfolio">
+                        <span class="template-icon">💼</span>
+                        <div class="template-title">Portfolio</div>
+                        <div class="template-desc">Personal portfolio site</div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div class="status-item" id="status-files">0 files</div>
-            <div class="status-item" id="status-ai">AI: Ready</div>
-            <div class="status-item" id="status-project">No project</div>
-            <div style="margin-left: auto;">
-                <div class="status-item" id="status-language">Plain Text</div>
-                <div class="status-item" id="status-line">Ln 1, Col 1</div>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="chat">
+                <i class="fas fa-comments icon"></i>
+                <span class="label">AI Chat</span>
             </div>
+            <div class="nav-item" data-page="files">
+                <i class="fas fa-folder icon"></i>
+                <span class="label">Files</span>
+            </div>
+            <div class="nav-item" data-page="editor">
+                <i class="fas fa-code icon"></i>
+                <span class="label">Editor</span>
+            </div>
+            <div class="nav-item" data-page="templates">
+                <i class="fas fa-th-large icon"></i>
+                <span class="label">Templates</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div>AI is working...</div>
         </div>
     </div>
 
-    <!-- Context Menu -->
-    <div class="context-menu" id="context-menu">
-        <div class="context-menu-item" data-action="new-file">
-            <i class="fas fa-file"></i> New File
-        </div>
-        <div class="context-menu-item" data-action="new-folder">
-            <i class="fas fa-folder"></i> New Folder
-        </div>
-        <div class="context-menu-separator"></div>
-        <div class="context-menu-item" data-action="rename">
-            <i class="fas fa-edit"></i> Rename
-        </div>
-        <div class="context-menu-item" data-action="delete">
-            <i class="fas fa-trash"></i> Delete
-        </div>
-    </div>
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
 
     <script>
-        // Global State
-        class CodeForgeAI {
+        // Mobile AI CodeStudio Application
+        class MobileAICodeStudio {
             constructor() {
+                // Core State
                 this.files = {};
                 this.openTabs = [];
                 this.activeTab = null;
                 this.monacoEditor = null;
-                this.projectType = null;
-                this.aiTools = {
-                    general: 'General chat and assistance',
-                    code: 'Generate and write code',
-                    debug: 'Find and fix bugs',
-                    refactor: 'Improve code structure',
-                    explain: 'Explain code functionality',
-                    optimize: 'Optimize performance'
-                };
+                this.currentPage = 'chat';
                 this.currentAITool = 'general';
+                
+                // AI Configuration
                 this.apiKey = 'AIzaSyD65oyN5DC1unVhzYwID0GReRJzKSxkRKM';
                 this.aiModel = 'gemini-1.5-flash-latest';
                 this.isProcessing = false;
                 
+                // Conversation Memory
+                this.conversationHistory = [];
+                this.conversationMemory = [];
+                this.sessionContext = {
+                    projectType: null,
+                    lastFiles: [],
+                    userPreferences: {},
+                    codePatterns: []
+                };
+                
+                // Initialize
                 this.init();
             }
 
             async init() {
+                this.loadFromStorage();
                 await this.initializeMonacoEditor();
                 this.setupEventListeners();
+                this.setupMobileOptimizations();
                 this.updateUI();
+                this.showNotification('AI CodeStudio Ready!', 'success');
             }
 
-            // Monaco Editor Initialization
+            // Monaco Editor Setup for Mobile
             async initializeMonacoEditor() {
                 return new Promise((resolve) => {
                     require.config({ 
@@ -835,37 +1141,36 @@ Examples:
                             language: 'javascript',
                             theme: 'vs-dark',
                             automaticLayout: true,
-                            fontSize: 13,
-                            lineHeight: 20,
-                            fontFamily: "'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace",
-                            minimap: { enabled: true },
-                            wordWrap: 'on',
+                            fontSize: 14,
+                            lineHeight: 22,
+                            fontFamily: "'Fira Code', 'Monaco', monospace",
+                            
+                            // Mobile Optimizations
+                            minimap: { enabled: false }, // Disable minimap on mobile
                             scrollBeyondLastLine: false,
-                            renderWhitespace: 'selection',
-                            selectOnLineNumbers: true,
-                            roundedSelection: false,
-                            readOnly: false,
-                            cursorStyle: 'line',
-                            mouseWheelZoom: true,
-                            contextmenu: true,
+                            wordWrap: 'on',
+                            lineNumbers: 'on',
                             folding: true,
-                            foldingStrategy: 'indentation',
-                            showFoldingControls: 'always',
-                            unfoldOnClickAfterEndOfLine: false,
-                            copyWithSyntaxHighlighting: true
+                            selectOnLineNumbers: true,
+                            mouseWheelZoom: true,
+                            
+                            // Touch optimizations
+                            multiCursorModifier: 'ctrlCmd',
+                            accessibilitySupport: 'on',
+                            
+                            // Mobile-specific settings
+                            quickSuggestions: true,
+                            suggestOnTriggerCharacters: true,
+                            acceptSuggestionOnEnter: 'on',
+                            tabCompletion: 'on'
                         });
 
-                        // Listen for content changes
+                        // File change listener
                         this.monacoEditor.onDidChangeModelContent(() => {
                             if (this.activeTab) {
                                 this.files[this.activeTab] = this.monacoEditor.getValue();
-                                this.updateTabModified(this.activeTab, true);
+                                this.saveToStorage();
                             }
-                        });
-
-                        // Listen for cursor position changes
-                        this.monacoEditor.onDidChangeCursorPosition((e) => {
-                            this.updateStatusBar();
                         });
 
                         resolve();
@@ -873,54 +1178,60 @@ Examples:
                 });
             }
 
-            // Event Listeners
+            // Mobile Event Listeners
             setupEventListeners() {
-                // Activity bar
-                document.querySelectorAll('.activity-item').forEach(item => {
+                // Bottom Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
                     item.addEventListener('click', (e) => {
-                        const panel = e.currentTarget.dataset.panel;
-                        this.switchPanel(panel);
+                        const page = e.currentTarget.dataset.page;
+                        this.switchPage(page);
                     });
                 });
 
                 // AI Tools
-                document.querySelectorAll('.ai-tool').forEach(tool => {
+                document.querySelectorAll('.ai-tool-card').forEach(tool => {
                     tool.addEventListener('click', (e) => {
                         const toolType = e.currentTarget.dataset.tool;
                         this.selectAITool(toolType);
                     });
                 });
 
-                // AI Execute
-                document.getElementById('execute-ai').addEventListener('click', () => {
-                    this.executeAICommand();
+                // Chat Input
+                const chatInput = document.getElementById('chat-input');
+                const sendBtn = document.getElementById('send-btn');
+                const inputContainer = document.getElementById('input-container');
+
+                // Auto-resize textarea
+                chatInput.addEventListener('input', () => {
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = Math.min(chatInput.scrollHeight, 100) + 'px';
                 });
 
-                // Clear input
-                document.getElementById('clear-input').addEventListener('click', () => {
-                    document.getElementById('ai-input').value = '';
+                // Focus effects
+                chatInput.addEventListener('focus', () => {
+                    inputContainer.classList.add('focused');
                 });
 
-                // New file/folder
+                chatInput.addEventListener('blur', () => {
+                    inputContainer.classList.remove('focused');
+                });
+
+                // Send message
+                sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // File Actions
                 document.getElementById('new-file-btn').addEventListener('click', () => {
                     this.createNewFile();
                 });
 
-                document.getElementById('new-folder-btn').addEventListener('click', () => {
-                    this.createNewFolder();
-                });
-
-                // Welcome screen actions
-                document.getElementById('start-coding').addEventListener('click', () => {
-                    this.createNewFile();
-                });
-
-                document.getElementById('open-templates').addEventListener('click', () => {
-                    this.switchPanel('extensions');
-                    this.showTemplates();
-                });
-
-                // Template cards
+                // Template Cards
                 document.querySelectorAll('.template-card').forEach(card => {
                     card.addEventListener('click', (e) => {
                         const template = e.currentTarget.dataset.template;
@@ -928,118 +1239,195 @@ Examples:
                     });
                 });
 
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    this.handleKeyboardShortcuts(e);
+                // Header Actions
+                document.getElementById('memory-btn').addEventListener('click', () => {
+                    this.showMemoryDialog();
                 });
 
-                // AI input enter key
-                document.getElementById('ai-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        this.executeAICommand();
-                    }
-                });
-
-                // Context menu
-                document.addEventListener('contextmenu', (e) => {
-                    if (e.target.closest('.tree-item')) {
-                        e.preventDefault();
-                        this.showContextMenu(e, e.target.closest('.tree-item'));
-                    }
-                });
-
-                document.addEventListener('click', () => {
-                    this.hideContextMenu();
+                document.getElementById('settings-btn').addEventListener('click', () => {
+                    this.showSettingsDialog();
                 });
             }
 
-            // Panel Management
-            switchPanel(panelName) {
-                // Update activity bar
-                document.querySelectorAll('.activity-item').forEach(item => {
+            // Mobile Optimizations
+            setupMobileOptimizations() {
+                // Prevent zoom on input focus
+                document.addEventListener('touchstart', {}, true);
+                
+                // Handle orientation change
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(() => {
+                        if (this.monacoEditor) {
+                            this.monacoEditor.layout();
+                        }
+                    }, 100);
+                });
+
+                // Prevent pull-to-refresh
+                document.body.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                // Handle back button (if in PWA)
+                window.addEventListener('popstate', (e) => {
+                    if (this.currentPage !== 'chat') {
+                        this.switchPage('chat');
+                    }
+                });
+            }
+
+            // Page Navigation
+            switchPage(pageName) {
+                // Update nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                 });
-                document.querySelector(`[data-panel="${panelName}"]`).classList.add('active');
+                document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
 
-                // Show/hide panels
-                document.querySelectorAll('.panel-content').forEach(panel => {
-                    panel.classList.add('hidden');
-                });
+                // Handle page transition
+                const currentPageEl = document.querySelector('.page.active');
+                const newPageEl = document.getElementById(`${pageName}-page`);
 
-                if (panelName === 'ai') {
-                    document.getElementById('ai-panel').classList.remove('collapsed');
-                    document.getElementById('sidebar').classList.add('collapsed');
-                } else {
-                    document.getElementById('ai-panel').classList.add('collapsed');
-                    document.getElementById('sidebar').classList.remove('collapsed');
+                if (currentPageEl) {
+                    currentPageEl.classList.remove('active');
+                    currentPageEl.classList.add('prev');
                     
-                    const targetPanel = document.getElementById(`${panelName}-panel`) || 
-                                       document.getElementById('explorer-panel');
-                    targetPanel.classList.remove('hidden');
+                    setTimeout(() => {
+                        currentPageEl.classList.remove('prev');
+                    }, 300);
                 }
-            }
 
-            showTemplates() {
-                document.getElementById('templates-panel').classList.remove('hidden');
-                document.getElementById('explorer-panel').classList.add('hidden');
+                newPageEl.classList.add('active');
+                this.currentPage = pageName;
+
+                // Page-specific actions
+                if (pageName === 'editor' && this.monacoEditor) {
+                    setTimeout(() => {
+                        this.monacoEditor.layout();
+                    }, 350);
+                }
             }
 
             // AI Tool Selection
             selectAITool(toolType) {
-                document.querySelectorAll('.ai-tool').forEach(tool => {
+                document.querySelectorAll('.ai-tool-card').forEach(tool => {
                     tool.classList.remove('active');
                 });
                 document.querySelector(`[data-tool="${toolType}"]`).classList.add('active');
                 this.currentAITool = toolType;
                 
-                // Update placeholder based on tool
-                const input = document.getElementById('ai-input');
+                // Update input placeholder
                 const placeholders = {
                     general: 'Ask me anything about coding...',
-                    code: 'Tell me what code to write...\nExample: "Create a React todo component"',
+                    code: 'Tell me what to build...\nExample: "Create a todo app"',
                     debug: 'Describe the bug or paste your code...',
-                    refactor: 'Paste the code you want to refactor...',
-                    explain: 'Paste the code you want explained...',
-                    optimize: 'Paste the code you want to optimize...'
+                    refactor: 'Paste code to refactor...',
+                    explain: 'Paste code to explain...',
+                    optimize: 'Paste code to optimize...'
                 };
-                input.placeholder = placeholders[toolType];
+                
+                document.getElementById('chat-input').placeholder = placeholders[toolType];
             }
 
-            // AI Command Execution
-            async executeAICommand() {
-                const input = document.getElementById('ai-input');
-                const command = input.value.trim();
+            // Send Message with Memory
+            async sendMessage() {
+                const input = document.getElementById('chat-input');
+                const message = input.value.trim();
                 
-                if (!command || this.isProcessing) return;
+                if (!message || this.isProcessing) return;
 
+                // Add user message
+                this.addMessage(message, 'user');
+                input.value = '';
+                input.style.height = 'auto';
+
+                // Show typing indicator
+                this.showTypingIndicator();
                 this.isProcessing = true;
-                this.updateStatus('AI: Processing...');
-                
+                this.showLoading('AI is thinking...');
+
                 try {
-                    const result = await this.callAI(command);
-                    await this.processAIResult(result);
-                    this.showNotification('AI command executed successfully', 'success');
+                    // Build context with memory
+                    const contextPrompt = this.buildContextualPrompt(message);
+                    
+                    // Call AI
+                    const response = await this.callAI(contextPrompt);
+                    
+                    // Process response
+                    await this.processAIResponse(response, message);
+                    
+                    // Update conversation memory
+                    this.updateConversationMemory(message, response);
+                    
                 } catch (error) {
-                    this.showNotification(`AI Error: ${error.message}`, 'error');
+                    this.addMessage(`Error: ${error.message}`, 'ai');
+                    this.showNotification('AI Error: Please try again', 'error');
                 } finally {
+                    this.hideTypingIndicator();
                     this.isProcessing = false;
-                    this.updateStatus('AI: Ready');
-                    input.value = '';
+                    this.hideLoading();
+                    this.saveToStorage();
                 }
             }
 
+            // Build Contextual Prompt with Memory
+            buildContextualPrompt(userMessage) {
+                let context = `You are AI CodeStudio, a mobile-first coding assistant. Create complete applications and write code directly to files.
+
+IMPORTANT RULES:
+1. NEVER show code in responses - write directly to files
+2. Use [FILE:filename] syntax for file creation
+3. Create mobile-responsive, modern applications
+4. Remember user preferences and project context
+5. Provide brief explanations only
+
+MEMORY & CONTEXT:
+- AI Tool: ${this.currentAITool}
+- Project Type: ${this.sessionContext.projectType || 'None'}
+- Active Files: ${Object.keys(this.files).join(', ') || 'None'}
+- Conversation Count: ${this.conversationHistory.length}
+
+RECENT CONTEXT:`;
+
+                // Add recent conversation context
+                const recentConversations = this.conversationHistory.slice(-3);
+                recentConversations.forEach(conv => {
+                    context += `\nUser: ${conv.user}\nAI: ${conv.ai.substring(0, 100)}...`;
+                });
+
+                // Add current file context
+                if (this.activeTab && this.files[this.activeTab]) {
+                    context += `\n\nCurrent File (${this.activeTab}):\n${this.files[this.activeTab].substring(0, 500)}...`;
+                }
+
+                // Add user patterns
+                if (this.sessionContext.codePatterns.length > 0) {
+                    context += `\n\nUser Patterns: ${this.sessionContext.codePatterns.join(', ')}`;
+                }
+
+                context += `\n\nUser Request: ${userMessage}`;
+
+                return context;
+            }
+
+            // Call AI API
             async callAI(prompt) {
-                const contextPrompt = this.buildContextPrompt(prompt);
-                
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.aiModel}:generateContent?key=${this.apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             role: 'user',
-                            parts: [{ text: contextPrompt }]
-                        }]
+                            parts: [{ text: prompt }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 2048
+                        }
                     })
                 });
 
@@ -1051,416 +1439,440 @@ Examples:
                 return data.candidates[0].content.parts[0].text;
             }
 
-            buildContextPrompt(userPrompt) {
-                let context = `You are CodeForge AI, a professional coding assistant. Your job is to help developers by writing code directly to files.
-
-IMPORTANT RULES:
-1. NEVER show code in chat responses
-2. ALWAYS write code directly to files using the [FILE:filename] syntax
-3. Create complete, working files
-4. Use modern best practices
-5. Add helpful comments
-
-Current context:
-- AI Tool: ${this.aiTools[this.currentAITool]}
-- Active file: ${this.activeTab || 'none'}
-- Project files: ${Object.keys(this.files).join(', ') || 'none'}
-
-When creating files, use this exact syntax:
-[FILE:filename.ext]
-// Your code here
-[/FILE]
-
-You can create multiple files in one response.
-
-Current file content (if editing):`;
-
-                if (this.activeTab && this.files[this.activeTab]) {
-                    context += `\n\n${this.activeTab}:\n${this.files[this.activeTab]}`;
-                }
-
-                context += `\n\nUser Request: ${userPrompt}`;
-
-                return context;
-            }
-
-            async processAIResult(aiResponse) {
-                // Extract files from AI response
-                const fileRegex = /\[FILE:([^\]]+)\]\s*([\s\S]*?)\s*\[\/FILE\]/g;
+            // Process AI Response
+            async processAIResponse(response, userMessage) {
+                // Extract files
+                const fileRegex = /\[FILE:([^\]]+)\]\s*([\s\S]*?)\s*(?=\[FILE:|$)/g;
                 let match;
                 let filesCreated = 0;
+                let firstFile = null;
 
-                while ((match = fileRegex.exec(aiResponse)) !== null) {
+                while ((match = fileRegex.exec(response)) !== null) {
                     const filename = match[1].trim();
-                    const content = match[2].trim();
+                    const content = match[2].trim().replace(/^```\w*\n?|```$/g, '');
                     
                     this.files[filename] = content;
                     filesCreated++;
                     
-                    // Open the first file created
-                    if (filesCreated === 1) {
-                        this.openFile(filename);
-                    }
+                    if (!firstFile) firstFile = filename;
                 }
 
+                // Clean response (remove file blocks)
+                let cleanResponse = response.replace(fileRegex, '').trim();
+                
                 if (filesCreated > 0) {
-                    this.renderFileTree();
-                    this.updateStatus(`AI: Created ${filesCreated} file(s)`);
-                } else {
-                    // If no files were created, show a brief message
-                    const cleanResponse = aiResponse.replace(fileRegex, '').trim();
-                    if (cleanResponse) {
-                        this.showNotification(cleanResponse.substring(0, 100) + '...', 'success');
+                    // Update UI
+                    this.renderFilesList();
+                    
+                    // Open first file
+                    if (firstFile) {
+                        this.openFile(firstFile);
+                        this.switchPage('files');
                     }
+                    
+                    // Show success message
+                    const fileNames = Object.keys(this.files).slice(-filesCreated).join(', ');
+                    cleanResponse = cleanResponse || `Created ${filesCreated} file(s): ${fileNames}`;
+                    
+                    this.showNotification(`✅ ${filesCreated} file(s) created!`, 'success');
+                    
+                    // Detect project type
+                    this.detectProjectType();
+                }
+
+                // Add AI response
+                this.addMessage(cleanResponse || 'Files created successfully!', 'ai');
+            }
+
+            // Update Conversation Memory
+            updateConversationMemory(userMessage, aiResponse) {
+                // Add to conversation history
+                this.conversationHistory.push({
+                    user: userMessage,
+                    ai: aiResponse,
+                    timestamp: Date.now(),
+                    tool: this.currentAITool
+                });
+
+                // Limit history size
+                if (this.conversationHistory.length > 20) {
+                    this.conversationHistory = this.conversationHistory.slice(-15);
+                }
+
+                // Extract patterns
+                this.extractUserPatterns(userMessage);
+                
+                // Update conversation count
+                document.getElementById('conversation-count').textContent = 
+                    `${this.conversationHistory.length} conversations`;
+            }
+
+            // Extract User Patterns
+            extractUserPatterns(message) {
+                const patterns = this.sessionContext.codePatterns;
+                
+                // Framework detection
+                if (message.toLowerCase().includes('react')) {
+                    if (!patterns.includes('React')) patterns.push('React');
+                }
+                if (message.toLowerCase().includes('vue')) {
+                    if (!patterns.includes('Vue')) patterns.push('Vue');
+                }
+                if (message.toLowerCase().includes('node') || message.toLowerCase().includes('express')) {
+                    if (!patterns.includes('Node.js')) patterns.push('Node.js');
+                }
+                
+                // Styling preferences
+                if (message.toLowerCase().includes('tailwind')) {
+                    if (!patterns.includes('Tailwind')) patterns.push('Tailwind');
+                }
+                if (message.toLowerCase().includes('bootstrap')) {
+                    if (!patterns.includes('Bootstrap')) patterns.push('Bootstrap');
+                }
+                
+                // Keep only last 10 patterns
+                if (patterns.length > 10) {
+                    this.sessionContext.codePatterns = patterns.slice(-10);
+                }
+            }
+
+            // Detect Project Type
+            detectProjectType() {
+                const fileNames = Object.keys(this.files);
+                
+                if (fileNames.includes('package.json')) {
+                    const packageJson = this.files['package.json'];
+                    if (packageJson.includes('react')) {
+                        this.sessionContext.projectType = 'React';
+                    } else if (packageJson.includes('vue')) {
+                        this.sessionContext.projectType = 'Vue';
+                    } else if (packageJson.includes('express')) {
+                        this.sessionContext.projectType = 'Express';
+                    } else {
+                        this.sessionContext.projectType = 'Node.js';
+                    }
+                } else if (fileNames.some(f => f.endsWith('.html'))) {
+                    this.sessionContext.projectType = 'Web';
+                } else {
+                    this.sessionContext.projectType = 'Mixed';
                 }
             }
 
             // File Management
-            createNewFile(name = null) {
-                const filename = name || prompt('Enter filename:');
+            createNewFile() {
+                const filename = prompt('Enter filename (e.g., app.js):');
                 if (!filename) return;
-
+                
                 this.files[filename] = '';
                 this.openFile(filename);
-                this.renderFileTree();
-            }
-
-            createNewFolder(name = null) {
-                const foldername = name || prompt('Enter folder name:');
-                if (!foldername) return;
-                
-                // For simplicity, we'll create a folder by adding a .gitkeep file
-                this.files[`${foldername}/.gitkeep`] = '';
-                this.renderFileTree();
+                this.renderFilesList();
+                this.saveToStorage();
+                this.showNotification('📄 File created!', 'success');
             }
 
             openFile(filename) {
                 if (!this.files.hasOwnProperty(filename)) return;
 
-                // Add to open tabs if not already open
-                if (!this.openTabs.includes(filename)) {
-                    this.openTabs.push(filename);
-                }
-
                 this.activeTab = filename;
-                this.renderTabs();
-                this.hideWelcomeScreen();
-
-                // Set editor content
+                
+                // Update Monaco Editor
                 if (this.monacoEditor) {
                     const language = this.getLanguageFromFilename(filename);
                     const model = monaco.editor.createModel(this.files[filename], language);
                     this.monacoEditor.setModel(model);
                 }
 
-                this.updateUI();
-            }
-
-            closeFile(filename) {
-                const index = this.openTabs.indexOf(filename);
-                if (index > -1) {
-                    this.openTabs.splice(index, 1);
-                }
-
-                if (this.activeTab === filename) {
-                    this.activeTab = this.openTabs.length > 0 ? this.openTabs[this.openTabs.length - 1] : null;
-                    
-                    if (this.activeTab) {
-                        this.openFile(this.activeTab);
-                    } else {
-                        this.showWelcomeScreen();
-                    }
-                }
-
-                this.renderTabs();
-                this.updateUI();
+                // Switch to editor page
+                this.switchPage('editor');
+                this.renderEditorTabs();
+                this.hideEditorWelcome();
             }
 
             getLanguageFromFilename(filename) {
                 const ext = filename.split('.').pop().toLowerCase();
                 const langMap = {
-                    'js': 'javascript',
-                    'jsx': 'javascript',
-                    'ts': 'typescript',
-                    'tsx': 'typescript',
-                    'html': 'html',
-                    'css': 'css',
-                    'scss': 'scss',
-                    'sass': 'sass',
-                    'json': 'json',
-                    'md': 'markdown',
-                    'py': 'python',
-                    'java': 'java',
-                    'cpp': 'cpp',
-                    'c': 'c',
-                    'go': 'go',
-                    'rs': 'rust',
-                    'php': 'php',
-                    'rb': 'ruby',
-                    'vue': 'html',
-                    'yml': 'yaml',
-                    'yaml': 'yaml'
+                    'js': 'javascript', 'jsx': 'javascript', 'ts': 'typescript', 'tsx': 'typescript',
+                    'html': 'html', 'css': 'css', 'scss': 'scss', 'json': 'json',
+                    'md': 'markdown', 'py': 'python', 'java': 'java', 'php': 'php',
+                    'rb': 'ruby', 'go': 'go', 'rs': 'rust', 'cpp': 'cpp', 'c': 'c'
                 };
                 return langMap[ext] || 'plaintext';
             }
 
             // Template System
             async createFromTemplate(templateName) {
-                this.updateStatus('AI: Creating project...');
+                this.showLoading('Creating project...');
                 
-                const templates = {
-                    react: `Create a modern React application with:
-- index.html with React CDN
-- App.js with functional component and hooks
-- style.css with modern styling
-- Include a counter example
-- Use Tailwind CSS`,
-                    
-                    vue: `Create a Vue 3 application with:
-- index.html with Vue 3 CDN
-- app.js with Composition API
-- style.css with modern styling
-- Include a reactive counter example`,
-                    
-                    nextjs: `Create a Next.js project structure with:
-- pages/index.js with homepage
-- pages/api/hello.js with API route
-- components/Layout.js
-- styles/globals.css
-- package.json with dependencies`,
-                    
-                    express: `Create an Express.js API with:
-- server.js with Express setup
-- routes/users.js with CRUD operations
-- middleware/auth.js
-- package.json with dependencies
-- README.md with setup instructions`,
-                    
-                    static: `Create a static website with:
-- index.html with modern HTML5 structure
-- style.css with responsive design
-- script.js with interactive features
-- Include navigation and sections`,
-                    
-                    'discord-bot': `Create a Discord bot with:
-- index.js with bot setup
-- commands/ping.js command
-- config.json for settings
-- package.json with discord.js
-- README.md with setup guide`
+                const prompts = {
+                    react: 'Create a modern React app with components, hooks, and Tailwind CSS styling',
+                    vue: 'Create a Vue 3 app with Composition API and modern styling',
+                    nextjs: 'Create a Next.js project with pages, API routes, and components',
+                    express: 'Create an Express.js API with routes, middleware, and MongoDB integration',
+                    static: 'Create a responsive static website with HTML, CSS, and JavaScript',
+                    'discord-bot': 'Create a Discord bot with commands and event handlers',
+                    game: 'Create an HTML5 canvas game with player controls and collision detection',
+                    portfolio: 'Create a professional portfolio website with sections and animations'
                 };
 
                 try {
-                    await this.callAI(templates[templateName]);
-                    this.projectType = templateName;
-                    this.showNotification(`${templateName} project created!`, 'success');
+                    await this.callAI(prompts[templateName]);
+                    this.sessionContext.projectType = templateName;
+                    this.showNotification(`🚀 ${templateName} project created!`, 'success');
                 } catch (error) {
-                    this.showNotification(`Error creating template: ${error.message}`, 'error');
+                    this.showNotification('❌ Template creation failed', 'error');
+                } finally {
+                    this.hideLoading();
                 }
             }
 
             // UI Rendering
-            renderFileTree() {
-                const fileTree = document.getElementById('file-tree');
-                fileTree.innerHTML = '';
-
-                const files = Object.keys(this.files).sort();
+            renderFilesList() {
+                const filesList = document.getElementById('files-list');
+                const filesWelcome = document.getElementById('files-welcome');
                 
-                files.forEach(filename => {
-                    const item = document.createElement('div');
-                    item.className = 'tree-item';
-                    if (filename === this.activeTab) {
-                        item.classList.add('active');
-                    }
-
+                const fileNames = Object.keys(this.files);
+                
+                if (fileNames.length === 0) {
+                    filesWelcome.style.display = 'flex';
+                    return;
+                }
+                
+                filesWelcome.style.display = 'none';
+                filesList.innerHTML = '';
+                
+                fileNames.forEach(filename => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    if (filename === this.activeTab) fileItem.classList.add('active');
+                    
                     const icon = this.getFileIcon(filename);
-                    item.innerHTML = `
-                        <i class="icon ${icon}"></i>
-                        <span class="name">${filename}</span>
+                    const size = new Blob([this.files[filename]]).size;
+                    const sizeStr = size < 1024 ? `${size}B` : `${Math.round(size/1024)}KB`;
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-icon" style="background: ${this.getFileColor(filename)};">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${filename}</div>
+                            <div class="file-meta">${sizeStr} • ${this.getLanguageFromFilename(filename)}</div>
+                        </div>
                     `;
-
-                    item.addEventListener('click', () => this.openFile(filename));
-                    fileTree.appendChild(item);
+                    
+                    fileItem.addEventListener('click', () => this.openFile(filename));
+                    filesList.appendChild(fileItem);
                 });
-
-                this.updateStatus(`${files.length} files`);
             }
 
-            renderTabs() {
+            renderEditorTabs() {
                 const tabsContainer = document.getElementById('editor-tabs');
                 tabsContainer.innerHTML = '';
-
-                this.openTabs.forEach(filename => {
+                
+                if (this.activeTab) {
                     const tab = document.createElement('div');
-                    tab.className = 'editor-tab';
-                    if (filename === this.activeTab) {
-                        tab.classList.add('active');
-                    }
-
-                    const icon = this.getFileIcon(filename);
+                    tab.className = 'editor-tab active';
                     tab.innerHTML = `
-                        <i class="icon ${icon}"></i>
-                        <span class="name">${filename}</span>
-                        <i class="close fas fa-times"></i>
+                        <i class="${this.getFileIcon(this.activeTab)}"></i>
+                        ${this.activeTab}
                     `;
-
-                    tab.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('fa-times')) {
-                            e.stopPropagation();
-                            this.closeFile(filename);
-                        } else {
-                            this.openFile(filename);
-                        }
-                    });
-
                     tabsContainer.appendChild(tab);
-                });
+                }
             }
 
             getFileIcon(filename) {
                 const ext = filename.split('.').pop().toLowerCase();
                 const iconMap = {
                     'html': 'fab fa-html5',
-                    'css': 'fab fa-css3-alt',
+                    'css': 'fab fa-css3-alt', 
                     'js': 'fab fa-js-square',
                     'jsx': 'fab fa-react',
                     'ts': 'fas fa-code',
                     'tsx': 'fab fa-react',
                     'vue': 'fab fa-vuejs',
-                    'json': 'fas fa-brackets-curly',
+                    'json': 'fas fa-cog',
                     'md': 'fab fa-markdown',
                     'py': 'fab fa-python',
                     'java': 'fab fa-java',
-                    'php': 'fab fa-php',
-                    'rb': 'fas fa-gem',
-                    'go': 'fas fa-code',
-                    'rs': 'fas fa-code',
-                    'yml': 'fas fa-cog',
-                    'yaml': 'fas fa-cog'
+                    'php': 'fab fa-php'
                 };
                 return iconMap[ext] || 'fas fa-file';
             }
 
-            // UI State Management
-            showWelcomeScreen() {
-                document.getElementById('welcome-screen').style.display = 'flex';
-                document.getElementById('monaco-editor').style.display = 'none';
+            getFileColor(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const colorMap = {
+                    'html': '#e34c26',
+                    'css': '#1572b6',
+                    'js': '#f7df1e',
+                    'jsx': '#61dafb',
+                    'ts': '#3178c6',
+                    'tsx': '#61dafb',
+                    'vue': '#4fc08d',
+                    'json': '#000000',
+                    'md': '#000000',
+                    'py': '#3776ab',
+                    'java': '#ed8b00',
+                    'php': '#777bb4'
+                };
+                return colorMap[ext] || '#6b7280';
             }
 
-            hideWelcomeScreen() {
-                document.getElementById('welcome-screen').style.display = 'none';
-                document.getElementById('monaco-editor').style.display = 'block';
-            }
-
-            updateUI() {
-                this.renderFileTree();
-                this.renderTabs();
-                this.updateStatusBar();
-            }
-
-            updateStatusBar() {
-                const filesCount = Object.keys(this.files).length;
-                document.getElementById('status-files').textContent = `${filesCount} files`;
+            // UI Helpers
+            addMessage(content, sender) {
+                const messagesContainer = document.getElementById('chat-messages');
+                const message = document.createElement('div');
+                message.className = `message ${sender}`;
                 
-                if (this.activeTab) {
-                    const language = this.getLanguageFromFilename(this.activeTab);
-                    document.getElementById('status-language').textContent = language;
-                    
-                    if (this.monacoEditor) {
-                        const position = this.monacoEditor.getPosition();
-                        document.getElementById('status-line').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
-                    }
-                } else {
-                    document.getElementById('status-language').textContent = 'Plain Text';
-                    document.getElementById('status-line').textContent = 'Ln 1, Col 1';
-                }
-
-                if (this.projectType) {
-                    document.getElementById('status-project').textContent = `Project: ${this.projectType}`;
-                } else {
-                    document.getElementById('status-project').textContent = 'No project';
-                }
+                const avatar = sender === 'user' ? '👤' : '🤖';
+                const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                message.innerHTML = `
+                    <div class="message-avatar">${avatar}</div>
+                    <div>
+                        <div class="message-content">${content}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(message);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Auto-scroll with smooth animation
+                setTimeout(() => {
+                    messagesContainer.scrollTo({
+                        top: messagesContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
             }
 
-            updateStatus(message) {
-                document.getElementById('status-ai').textContent = message;
+            showTypingIndicator() {
+                const messagesContainer = document.getElementById('chat-messages');
+                const indicator = document.createElement('div');
+                indicator.id = 'typing-indicator';
+                indicator.className = 'message ai';
+                indicator.innerHTML = `
+                    <div class="message-avatar">🤖</div>
+                    <div>
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(indicator);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
-            updateTabModified(filename, modified) {
-                const tab = document.querySelector(`[data-filename="${filename}"]`);
-                if (tab) {
-                    if (modified) {
-                        tab.classList.add('modified');
-                    } else {
-                        tab.classList.remove('modified');
-                    }
-                }
+            hideTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
             }
 
-            // Notifications
-            showNotification(message, type = 'info') {
+            showLoading(message = 'Loading...') {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.querySelector('.loading-content div:last-child').textContent = message;
+                overlay.classList.add('show');
+            }
+
+            hideLoading() {
+                document.getElementById('loading-overlay').classList.remove('show');
+            }
+
+            hideEditorWelcome() {
+                document.getElementById('editor-welcome').style.display = 'none';
+            }
+
+            showNotification(message, type = 'success') {
+                const container = document.getElementById('notification-container');
                 const notification = document.createElement('div');
                 notification.className = `notification ${type}`;
                 notification.textContent = message;
                 
-                document.body.appendChild(notification);
+                container.appendChild(notification);
                 
-                setTimeout(() => {
-                    notification.classList.add('show');
-                }, 100);
-                
+                setTimeout(() => notification.classList.add('show'), 100);
                 setTimeout(() => {
                     notification.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(notification);
-                    }, 300);
+                    setTimeout(() => container.removeChild(notification), 300);
                 }, 3000);
             }
 
-            // Context Menu
-            showContextMenu(event, element) {
-                const contextMenu = document.getElementById('context-menu');
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = event.pageX + 'px';
-                contextMenu.style.top = event.pageY + 'px';
+            showMemoryDialog() {
+                const conversations = this.conversationHistory.length;
+                const patterns = this.sessionContext.codePatterns.join(', ') || 'None detected';
+                const projectType = this.sessionContext.projectType || 'None';
+                
+                alert(`💾 Conversation Memory:
+                
+📊 Total Conversations: ${conversations}
+🏗️ Project Type: ${projectType}
+🎯 Detected Patterns: ${patterns}
+📁 Files Created: ${Object.keys(this.files).length}
+
+Memory helps AI provide better context-aware responses.`);
             }
 
-            hideContextMenu() {
-                document.getElementById('context-menu').style.display = 'none';
-            }
-
-            // Keyboard Shortcuts
-            handleKeyboardShortcuts(event) {
-                if (event.ctrlKey || event.metaKey) {
-                    switch (event.key) {
-                        case 'n':
-                            event.preventDefault();
-                            this.createNewFile();
-                            break;
-                        case 's':
-                            event.preventDefault();
-                            // Save would be implemented here
-                            this.showNotification('File saved', 'success');
-                            break;
-                        case 'w':
-                            event.preventDefault();
-                            if (this.activeTab) {
-                                this.closeFile(this.activeTab);
-                            }
-                            break;
-                        case '`':
-                            event.preventDefault();
-                            this.switchPanel('ai');
-                            break;
-                    }
+            showSettingsDialog() {
+                const newApiKey = prompt('Enter your Gemini API Key:', this.apiKey);
+                if (newApiKey && newApiKey !== this.apiKey) {
+                    this.apiKey = newApiKey;
+                    this.saveToStorage();
+                    this.showNotification('✅ API Key updated!', 'success');
                 }
+            }
+
+            // Storage Management
+            saveToStorage() {
+                const data = {
+                    files: this.files,
+                    conversationHistory: this.conversationHistory,
+                    sessionContext: this.sessionContext,
+                    apiKey: this.apiKey
+                };
+                localStorage.setItem('aiCodeStudio', JSON.stringify(data));
+            }
+
+            loadFromStorage() {
+                const saved = localStorage.getItem('aiCodeStudio');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    this.files = data.files || {};
+                    this.conversationHistory = data.conversationHistory || [];
+                    this.sessionContext = data.sessionContext || {
+                        projectType: null,
+                        lastFiles: [],
+                        userPreferences: {},
+                        codePatterns: []
+                    };
+                    if (data.apiKey) this.apiKey = data.apiKey;
+                }
+            }
+
+            updateUI() {
+                this.renderFilesList();
+                if (this.activeTab) {
+                    this.renderEditorTabs();
+                }
+                
+                // Update conversation count
+                document.getElementById('conversation-count').textContent = 
+                    `${this.conversationHistory.length} conversations`;
             }
         }
 
-        // Initialize the application
+        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
-            window.codeForgeAI = new CodeForgeAI();
+            window.mobileAI = new MobileAICodeStudio();
         });
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
     </script>
 </body>
 </html>
