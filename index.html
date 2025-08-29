@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CursorClone - AI Coding Agent</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 16px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent-blue);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 48px;
+        }
+
+        .sidebar-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Center Panel */
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        .editor-tabs {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            overflow-x: auto;
+        }
+
+        .editor-tab {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border-right: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .editor-tab.active {
+            background: var(--bg-primary);
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        /* AI Chat Panel */
+        .ai-panel {
+            width: 400px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ai-tool {
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-tool:hover, .ai-tool.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.ai {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+        }
+
+        .message.user .message-content {
+            background: var(--accent-blue);
+        }
+
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .chat-textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .send-btn {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Terminal */
+        .terminal-panel {
+            height: 250px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+            display: none;
+            flex-direction: column;
+        }
+
+        .terminal-panel.open {
+            display: flex;
+        }
+
+        .terminal-header {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-body {
+            flex: 1;
+            background: #000;
+        }
+
+        /* File Explorer */
+        .file-explorer {
+            padding: 0;
+        }
+
+        .file-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .file-item.active {
+            background: var(--accent-blue);
+        }
+
+        /* Project Templates */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .template-card {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .template-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #4493f8;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Form Elements */
+        .input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none !important;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+
+        .mb-4 {
+            margin-bottom: 16px;
+        }
+
+        .p-2 {
+            padding: 8px;
+        }
+
+        .text-sm {
+            font-size: 12px;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+
+        /* Monaco Editor */
+        .monaco-editor-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ai-panel {
+                width: 100%;
+                position: fixed;
+                top: 48px;
+                right: 0;
+                bottom: 0;
+                z-index: 200;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            }
+
+            .ai-panel.open {
+                transform: translateX(0);
+            }
+
+            .sidebar {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">🤖 CursorClone</div>
+            <div class="header-nav">
+                <button class="nav-btn active" data-view="editor">Editor</button>
+                <button class="nav-btn" data-view="terminal">Terminal</button>
+                <button class="nav-btn" data-view="preview">Preview</button>
+                <button class="nav-btn" id="toggle-ai">AI Chat</button>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Project</h3>
+                    <button class="nav-btn" id="toggle-sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="files">Files</button>
+                    <button class="sidebar-tab" data-tab="templates">Templates</button>
+                    <button class="sidebar-tab" data-tab="git">Git</button>
+                </div>
+
+                <div class="sidebar-content">
+                    <!-- Files Tab -->
+                    <div id="files-tab" class="tab-content">
+                        <div class="mb-4">
+                            <button class="btn" id="new-file-btn">
+                                <i class="fas fa-plus"></i> New File
+                            </button>
+                        </div>
+                        <div class="file-explorer" id="file-explorer">
+                            <!-- Files will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Templates Tab -->
+                    <div id="templates-tab" class="tab-content hidden">
+                        <h4 class="mb-2">Quick Start</h4>
+                        <div class="template-grid">
+                            <div class="template-card" data-template="react">
+                                <div class="template-icon">⚛️</div>
+                                <div class="text-sm">React</div>
+                            </div>
+                            <div class="template-card" data-template="vue">
+                                <div class="template-icon">🟢</div>
+                                <div class="text-sm">Vue</div>
+                            </div>
+                            <div class="template-card" data-template="express">
+                                <div class="template-icon">🟢</div>
+                                <div class="text-sm">Express</div>
+                            </div>
+                            <div class="template-card" data-template="static">
+                                <div class="template-icon">🌐</div>
+                                <div class="text-sm">Static</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Git Tab -->
+                    <div id="git-tab" class="tab-content hidden">
+                        <div class="mb-4">
+                            <button class="btn" id="git-init">Initialize Git</button>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="input" id="commit-msg" placeholder="Commit message">
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary" id="git-add">Add</button>
+                            <button class="btn" id="git-commit">Commit</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Panel -->
+            <main class="center-panel">
+                <!-- Editor Tabs -->
+                <div class="editor-tabs" id="editor-tabs">
+                    <!-- Tabs will be rendered here -->
+                </div>
+
+                <!-- Editor Container -->
+                <div class="editor-container">
+                    <div id="monaco-editor" class="monaco-editor-container"></div>
+                    
+                    <!-- Welcome Screen -->
+                    <div id="welcome-screen" class="flex items-center justify-center" style="height: 100%; flex-direction: column; gap: 16px;">
+                        <h2>Welcome to CursorClone</h2>
+                        <p class="text-secondary">AI-powered coding agent</p>
+                        <div class="flex gap-2">
+                            <button class="btn" id="create-project">Create Project</button>
+                            <button class="btn-secondary" id="open-ai-chat">Open AI Chat</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terminal Panel -->
+                <div class="terminal-panel" id="terminal-panel">
+                    <div class="terminal-header">
+                        <span><i class="fas fa-terminal"></i> Terminal</span>
+                        <button class="nav-btn" id="close-terminal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="terminal-body" id="terminal-body">
+                        <!-- Terminal will be rendered here -->
+                    </div>
+                </div>
+            </main>
+
+            <!-- AI Chat Panel -->
+            <aside class="ai-panel" id="ai-panel">
+                <div class="ai-header">
+                    <h3>AI Assistant</h3>
+                    <button class="nav-btn" id="close-ai">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="ai-tools">
+                    <div class="ai-tool" data-tool="code">💻 Code</div>
+                    <div class="ai-tool" data-tool="debug">🐛 Debug</div>
+                    <div class="ai-tool" data-tool="refactor">♻️ Refactor</div>
+                    <div class="ai-tool" data-tool="explain">📖 Explain</div>
+                    <div class="ai-tool" data-tool="optimize">⚡ Optimize</div>
+                    <div class="ai-tool" data-tool="test">🧪 Test</div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message ai">
+                        <div class="message-content">
+                            Hello! I'm your AI coding assistant. I can help you write code, debug issues, explain concepts, and much more. What would you like to work on today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-container">
+                        <textarea class="chat-textarea" id="chat-input" placeholder="Ask me anything about coding..." rows="1"></textarea>
+                        <button class="send-btn" id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let state = {
+            files: {},
+            openTabs: [],
+            activeTab: null,
+            monacoEditor: null,
+            terminal: null,
+            aiModel: 'gemini-1.5-flash-latest',
+            apiKey: 'AIzaSyD65oyN5DC1unVhzYwID0GReRJzKSxkRKM',
+            conversationHistory: [],
+            currentProject: null
+        };
+
+        // Project Templates
+        const templates = {
+            react: {
+                name: 'React App',
+                files: {
+                    'index.html': `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React App</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel" src="app.js"></script>
+</body>
+</html>`,
+                    'app.js': `function App() {
+    const [count, setCount] = React.useState(0);
+    
+    return (
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                    React App
+                </h1>
+                <p className="text-gray-600 mb-6">
+                    Count: {count}
+                </p>
+                <button 
+                    onClick={() => setCount(count + 1)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    Click me
+                </button>
+            </div>
+        </div>
+    );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));`
+                }
+            },
+            vue: {
+                name: 'Vue App',
+                files: {
+                    'index.html': `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="app.js"></script>
+</body>
+</html>`,
+                    'app.js': `const { createApp, ref } = Vue;
+
+createApp({
+    setup() {
+        const count = ref(0);
+        const message = ref('Vue App');
+        
+        return { count, message };
+    },
+    template: \`
+        <div class="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">
+                    {{ message }}
+                </h1>
+                <p class="text-gray-600 mb-6">
+                    Count: {{ count }}
+                </p>
+                <button 
+                    @click="count++"
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    Increment
+                </button>
+            </div>
+        </div>
+    \`
+}).mount('#app');`
+                }
+            },
+            static: {
+                name: 'Static Website',
+                files: {
+                    'index.html': `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>My Website</h1>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="home">
+            <h2>Welcome</h2>
+            <p>This is a static website template.</p>
+            <button onclick="alert('Hello World!')">Click me</button>
+        </section>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>`,
+                    'style.css': `* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+header {
+    background: #007bff;
+    color: white;
+    padding: 1rem 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}`,
+                    'script.js': `console.log('Website loaded successfully!');
+
+// Add smooth scrolling
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});`
+                }
+            }
+        };
+
+        // Initialize Monaco Editor
+        function initializeMonacoEditor() {
+            require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+            require(['vs/editor/editor.main'], function () {
+                state.monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                    value: '// Welcome to CursorClone!\n// Start coding by creating a new file or selecting a template.',
+                    language: 'javascript',
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                    minimap: { enabled: true },
+                    fontSize: 14,
+                    wordWrap: 'on',
+                    scrollBeyondLastLine: false,
+                    renderWhitespace: 'selection',
+                    selectOnLineNumbers: true,
+                    lineNumbers: 'on',
+                    roundedSelection: false,
+                    readOnly: false,
+                    cursorStyle: 'line',
+                    automaticLayout: true,
+                });
+
+                // Listen for changes
+                state.monacoEditor.onDidChangeModelContent(() => {
+                    if (state.activeTab) {
+                        state.files[state.activeTab] = state.monacoEditor.getValue();
+                        updatePreview();
+                    }
+                });
+            });
+        }
+
+        // Initialize Terminal
+        function initializeTerminal() {
+            if (typeof Terminal !== 'undefined') {
+                state.terminal = new Terminal({
+                    theme: {
+                        background: '#000000',
+                        foreground: '#ffffff'
+                    },
+                    fontSize: 14,
+                    fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace'
+                });
+                
+                state.terminal.open(document.getElementById('terminal-body'));
+                state.terminal.writeln('Welcome to CursorClone Terminal!');
+                state.terminal.writeln('Type "help" for available commands.');
+                state.terminal.write('$ ');
+
+                // Handle terminal input
+                let currentLine = '';
+                state.terminal.onKey((key) => {
+                    const char = key.domEvent.key;
+                    if (char === 'Enter') {
+                        state.terminal.writeln('');
+                        handleTerminalCommand(currentLine);
+                        currentLine = '';
+                        state.terminal.write('$ ');
+                    } else if (char === 'Backspace') {
+                        if (currentLine.length > 0) {
+                            currentLine = currentLine.slice(0, -1);
+                            state.terminal.write('\b \b');
+                        }
+                    } else if (char.length === 1) {
+                        currentLine += char;
+                        state.terminal.write(char);
+                    }
+                });
+            }
+        }
+
+        // Handle terminal commands
+        function handleTerminalCommand(command) {
+            const args = command.trim().split(' ');
+            const cmd = args[0];
+
+            switch (cmd) {
+                case 'help':
+                    state.terminal.writeln('Available commands:');
+                    state.terminal.writeln('  help     - Show this help');
+                    state.terminal.writeln('  ls       - List files');
+                    state.terminal.writeln('  clear    - Clear terminal');
+                    state.terminal.writeln('  npm      - NPM commands (simulation)');
+                    state.terminal.writeln('  git      - Git commands (simulation)');
+                    break;
+                case 'ls':
+                    const files = Object.keys(state.files);
+                    if (files.length === 0) {
+                        state.terminal.writeln('No files in project');
+                    } else {
+                        files.forEach(file => state.terminal.writeln(file));
+                    }
+                    break;
+                case 'clear':
+                    state.terminal.clear();
+                    break;
+                case 'npm':
+                    if (args[1] === 'install' && args[2]) {
+                        state.terminal.writeln(`Installing ${args[2]}...`);
+                        setTimeout(() => {
+                            state.terminal.writeln(`✓ ${args[2]} installed successfully`);
+                        }, 1000);
+                    } else {
+                        state.terminal.writeln('Usage: npm install <package>');
+                    }
+                    break;
+                case 'git':
+                    handleGitCommand(args.slice(1));
+                    break;
+                default:
+                    if (command.trim()) {
+                        state.terminal.writeln(`Command not found: ${cmd}`);
+                    }
+            }
+        }
+
+        // Handle Git commands
+        function handleGitCommand(args) {
+            const cmd = args[0];
+            switch (cmd) {
+                case 'status':
+                    state.terminal.writeln('On branch main');
+                    state.terminal.writeln('Your branch is up to date.');
+                    break;
+                case 'add':
+                    state.terminal.writeln('Changes staged for commit');
+                    break;
+                case 'commit':
+                    if (args[1] === '-m' && args[2]) {
+                        state.terminal.writeln(`[main] ${args.slice(2).join(' ')}`);
+                    } else {
+                        state.terminal.writeln('Usage: git commit -m "message"');
+                    }
+                    break;
+                default:
+                    state.terminal.writeln(`git: '${cmd}' is not a git command`);
+            }
+        }
+
+        // File Management
+        function createFile(filename) {
+            if (!filename || state.files[filename]) return;
+            
+            state.files[filename] = '';
+            openFile(filename);
+            renderFileExplorer();
+        }
+
+        function openFile(filename) {
+            if (!state.files.hasOwnProperty(filename)) return;
+            
+            if (!state.openTabs.includes(filename)) {
+                state.openTabs.push(filename);
+            }
+            
+            state.activeTab = filename;
+            renderTabs();
+            
+            if (state.monacoEditor) {
+                const language = getLanguageFromFilename(filename);
+                const model = monaco.editor.createModel(state.files[filename], language);
+                state.monacoEditor.setModel(model);
+            }
+            
+            hideWelcomeScreen();
+        }
+
+        function closeFile(filename) {
+            const index = state.openTabs.indexOf(filename);
+            if (index > -1) {
+                state.openTabs.splice(index, 1);
+            }
+            
+            if (state.activeTab === filename) {
+                state.activeTab = state.openTabs.length > 0 ? state.openTabs[state.openTabs.length - 1] : null;
+                
+                if (state.activeTab) {
+                    openFile(state.activeTab);
+                } else {
+                    showWelcomeScreen();
+                }
+            }
+            
+            renderTabs();
+        }
+
+        function getLanguageFromFilename(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const langMap = {
+                'js': 'javascript',
+                'ts': 'typescript',
+                'html': 'html',
+                'css': 'css',
+                'json': 'json',
+                'md': 'markdown',
+                'py': 'python',
+                'java': 'java',
+                'cpp': 'cpp',
+                'c': 'c',
+                'go': 'go',
+                'rs': 'rust',
+                'php': 'php',
+                'rb': 'ruby'
+            };
+            return langMap[ext] || 'plaintext';
+        }
+
+        // UI Rendering
+        function renderFileExplorer() {
+            const explorer = document.getElementById('file-explorer');
+            explorer.innerHTML = '';
+            
+            Object.keys(state.files).sort().forEach(filename => {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                if (filename === state.activeTab) item.classList.add('active');
+                
+                const icon = getFileIcon(filename);
+                item.innerHTML = `
+                    <i class="${icon}"></i>
+                    <span>${filename}</span>
+                `;
+                
+                item.addEventListener('click', () => openFile(filename));
+                explorer.appendChild(item);
+            });
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'html': 'fab fa-html5',
+                'css': 'fab fa-css3-alt',
+                'js': 'fab fa-js-square',
+                'ts': 'fas fa-code',
+                'json': 'fas fa-brackets-curly',
+                'md': 'fab fa-markdown',
+                'py': 'fab fa-python',
+                'java': 'fab fa-java',
+                'php': 'fab fa-php',
+                'rb': 'fas fa-gem',
+                'go': 'fas fa-code',
+                'rs': 'fas fa-code'
+            };
+            return iconMap[ext] || 'fas fa-file';
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('editor-tabs');
+            tabsContainer.innerHTML = '';
+            
+            state.openTabs.forEach(filename => {
+                const tab = document.createElement('div');
+                tab.className = 'editor-tab';
+                if (filename === state.activeTab) tab.classList.add('active');
+                
+                tab.innerHTML = `
+                    <i class="${getFileIcon(filename)}"></i>
+                    <span>${filename}</span>
+                    <i class="fas fa-times" style="margin-left: 8px; cursor: pointer;"></i>
+                `;
+                
+                tab.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('fa-times')) {
+                        e.stopPropagation();
+                        closeFile(filename);
+                    } else {
+                        openFile(filename);
+                    }
+                });
+                
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        function showWelcomeScreen() {
+            document.getElementById('welcome-screen').style.display = 'flex';
+            if (state.monacoEditor) {
+                document.getElementById('monaco-editor').style.display = 'none';
+            }
+        }
+
+        function hideWelcomeScreen() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            if (state.monacoEditor) {
+                document.getElementById('monaco-editor').style.display = 'block';
+            }
+        }
+
+        // Template System
+        function createFromTemplate(templateName) {
+            const template = templates[templateName];
+            if (!template) return;
+            
+            // Clear existing files
+            state.files = {};
+            state.openTabs = [];
+            state.activeTab = null;
+            
+            // Add template files
+            Object.entries(template.files).forEach(([filename, content]) => {
+                state.files[filename] = content;
+            });
+            
+            // Open the first file
+            const firstFile = Object.keys(template.files)[0];
+            if (firstFile) {
+                openFile(firstFile);
+            }
+            
+            renderFileExplorer();
+            updatePreview();
+        }
+
+        // Preview System
+        function updatePreview() {
+            // This would update a preview iframe if implemented
+            console.log('Preview updated');
+        }
+
+        // AI Integration
+        async function sendToAI(message, tool = null) {
+            if (!state.apiKey) {
+                addMessage('Please set your API key in settings', 'ai');
+                return;
+            }
+
+            addMessage(message, 'user');
+            
+            try {
+                const context = tool ? getContextForTool(tool) : '';
+                const fullPrompt = `${context}\n\nUser: ${message}`;
+                
+                const response = await callGeminiAPI(fullPrompt);
+                const parsedResponse = parseAIResponse(response);
+                
+                addMessage(parsedResponse.message, 'ai');
+                
+                if (parsedResponse.files) {
+                    parsedResponse.files.forEach(({ filename, content }) => {
+                        state.files[filename] = content;
+                        if (!state.activeTab) {
+                            openFile(filename);
+                        }
+                    });
+                    renderFileExplorer();
+                    updatePreview();
+                }
+                
+            } catch (error) {
+                addMessage(`Error: ${error.message}`, 'ai');
+            }
+        }
+
+        function getContextForTool(tool) {
+            const contexts = {
+                code: 'You are a coding assistant. Help write clean, efficient code.',
+                debug: 'You are a debugging expert. Help find and fix code issues.',
+                refactor: 'You are a refactoring specialist. Help improve code structure.',
+                explain: 'You are a code explainer. Help understand how code works.',
+                optimize: 'You are a performance expert. Help optimize code efficiency.',
+                test: 'You are a testing expert. Help write comprehensive tests.'
+            };
+            
+            let context = contexts[tool] || '';
+            
+            if (state.activeTab && state.files[state.activeTab]) {
+                context += `\n\nCurrent file (${state.activeTab}):\n${state.files[state.activeTab]}`;
+            }
+            
+            return context;
+        }
+
+        async function callGeminiAPI(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${state.aiModel}:generateContent?key=${state.apiKey}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        role: 'user',
+                        parts: [{ text: prompt }]
+                    }]
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        function parseAIResponse(response) {
+            const files = [];
+            const fileRegex = /```(\w+)?\s*\/\/\s*(\S+)\s*\n([\s\S]*?)```/g;
+            let match;
+            
+            while ((match = fileRegex.exec(response)) !== null) {
+                files.push({
+                    filename: match[2],
+                    content: match[3].trim()
+                });
+            }
+            
+            const message = response.replace(fileRegex, '').trim();
+            
+            return { message, files };
+        }
+
+        function addMessage(content, sender) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const message = document.createElement('div');
+            message.className = `message ${sender}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            if (sender === 'ai') {
+                messageContent.innerHTML = marked.parse(content);
+            } else {
+                messageContent.textContent = content;
+            }
+            
+            message.appendChild(messageContent);
+            messagesContainer.appendChild(message);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize editors
+            initializeMonacoEditor();
+            initializeTerminal();
+            
+            // Navigation
+            document.querySelectorAll('[data-view]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const view = e.target.dataset.view;
+                    document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    if (view === 'terminal') {
+                        document.getElementById('terminal-panel').classList.add('open');
+                    } else {
+                        document.getElementById('terminal-panel').classList.remove('open');
+                    }
+                });
+            });
+            
+            // Sidebar tabs
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    
+                    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                });
+            });
+            
+            // AI Panel
+            document.getElementById('toggle-ai').addEventListener('click', () => {
+                document.getElementById('ai-panel').classList.toggle('open');
+            });
+            
+            document.getElementById('close-ai').addEventListener('click', () => {
+                document.getElementById('ai-panel').classList.remove('open');
+            });
+            
+            // AI Tools
+            document.querySelectorAll('.ai-tool').forEach(tool => {
+                tool.addEventListener('click', (e) => {
+                    document.querySelectorAll('.ai-tool').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                });
+            });
+            
+            // Chat
+            document.getElementById('send-btn').addEventListener('click', () => {
+                const input = document.getElementById('chat-input');
+                const message = input.value.trim();
+                if (message) {
+                    const activeTool = document.querySelector('.ai-tool.active')?.dataset.tool;
+                    sendToAI(message, activeTool);
+                    input.value = '';
+                }
+            });
+            
+            document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.getElementById('send-btn').click();
+                }
+            });
+            
+            // File operations
+            document.getElementById('new-file-btn').addEventListener('click', () => {
+                const filename = prompt('Enter filename:');
+                if (filename) {
+                    createFile(filename);
+                }
+            });
+            
+            // Templates
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const template = e.currentTarget.dataset.template;
+                    createFromTemplate(template);
+                });
+            });
+            
+            // Welcome screen
+            document.getElementById('create-project').addEventListener('click', () => {
+                document.querySelector('.sidebar-tab[data-tab="templates"]').click();
+            });
+            
+            document.getElementById('open-ai-chat').addEventListener('click', () => {
+                document.getElementById('toggle-ai').click();
+            });
+            
+            // Terminal
+            document.getElementById('close-terminal').addEventListener('click', () => {
+                document.getElementById('terminal-panel').classList.remove('open');
+            });
+            
+            // Sidebar toggle
+            document.getElementById('toggle-sidebar').addEventListener('click', () => {
+                document.querySelector('.sidebar').classList.toggle('collapsed');
+            });
+            
+            // Git commands
+            document.getElementById('git-init').addEventListener('click', () => {
+                addMessage('Git repository initialized', 'ai');
+            });
+            
+            document.getElementById('git-add').addEventListener('click', () => {
+                if (state.terminal) {
+                    state.terminal.writeln('git add .');
+                    state.terminal.writeln('Changes staged for commit');
+                    state.terminal.write('$ ');
+                }
+            });
+            
+            document.getElementById('git-commit').addEventListener('click', () => {
+                const message = document.getElementById('commit-msg').value;
+                if (message && state.terminal) {
+                    state.terminal.writeln(`git commit -m "${message}"`);
+                    state.terminal.writeln(`[main] ${message}`);
+                    state.terminal.write('$ ');
+                    document.getElementById('commit-msg').value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
