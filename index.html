@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tinky Model - AI Web Dev Agent</title>
+    <!-- For Markdown parsing and Syntax Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        :root{--dark-bg:#121212;--page-bg:#1c1c1e;--panel-bg:#2c2c2e;--text-light:#f0f0f0;--text-dark:#8e8e93;--accent-blue:#007aff;--border-color:#3a3a3c;}
+        body,html{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:var(--dark-bg);color:var(--text-light);overflow:hidden}
+        .page{position:absolute;top:0;left:0;width:100%;height:100%;background-color:var(--page-bg);display:none;flex-direction:column;transition:transform .4s ease,opacity .4s ease}
+        .page.active{display:flex;z-index:5}
+
+        /* --- App Switcher --- */
+        .app-switcher{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.85);backdrop-filter:blur(20px);z-index:100;display:none;align-items:center;padding:0 5vw;box-sizing:border-box;overflow-x:auto;overflow-y:hidden}
+        .app-switcher.visible{display:flex}
+        .page-previews{display:flex;gap:30px;padding:40px 0}
+        .page-preview-card{width:280px;height:550px;border:1px solid var(--border-color);border-radius:25px;background-color:#2a2a2e;cursor:pointer;transition:transform .4s ease,box-shadow .4s ease;flex-shrink:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;box-sizing:border-box}
+        .page-preview-card:hover{transform:scale(1.03);box-shadow:0 10px 30px #000}
+        .page-preview-card svg{width:60px;height:60px;fill:var(--text-dark);margin-bottom:20px}
+        .page-preview-card h3{margin:0;font-size:1.5rem}
+
+        /* --- Common Elements --- */
+        .page-header{position:sticky;top:0;left:0;right:0;display:flex;align-items:center;padding:12px 16px;background-color:rgba(28, 28, 30, 0.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border-color);z-index:10;flex-shrink:0;gap:10px;}
+        .grid-icon,.header-icon-btn{cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:transparent;border-radius:8px;transition:background-color .2s ease;border:none;padding:0;}
+        .grid-icon:hover, .header-icon-btn:hover { background-color: #333; }
+        .grid-icon{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;padding:10px;box-sizing:border-box}
+        .grid-dot{width:6px;height:6px;background-color:#b0b0b0;border-radius:50%}
+        button, a, .grid-icon, .page-preview-card, li { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        /* --- Main Agent Page --- */
+        .page-title{font-size:1.1rem;font-weight:600;margin-left:5px;}
+        .header-controls{display:flex;align-items:center;margin-left:auto;gap:15px}
+        .mode-toggle-container{display:flex;align-items:center;gap:10px;background-color:#2c2c2e;padding:4px;border-radius:10px}
+        .mode-btn{padding:5px 15px;border:none;background:transparent;color:var(--text-dark);font-weight:600;border-radius:8px;cursor:pointer;transition:all .3s ease}
+        .mode-btn.active{background-color:var(--accent-blue);color:white;box-shadow:0 2px 10px rgba(0,122,255,.3)}
+        #main-agent-page .chat-body{flex-grow:1;overflow-y:auto;padding:20px;padding-bottom:150px}
+        #main-agent-page .chat-footer{position:fixed;bottom:0;left:0;right:0;padding:12px 16px 24px 16px;background:linear-gradient(to top,#1c1c1e 50%,transparent);z-index:10}
+
+        /* --- Live Preview Page --- */
+        #preview-page .page-content{flex-grow:1;padding:0}
+        #preview-frame{width:100%;height:100%;border:none;background-color:#fff}
+
+        /* --- File Manager --- */
+        #files-page .page-content{flex-grow:1;display:flex;overflow:hidden;position:relative}
+        .file-list-panel{position:fixed;top:61px;left:0;bottom:0;width:280px;background:#252526;z-index:20;transform:translateX(-100%);transition:transform .4s ease;display:flex;flex-direction:column;border-right:1px solid var(--dark-bg)}
+        .file-list-panel.open{transform:translateX(0)}
+        .file-list-header{padding:10px 15px;font-size:1.1rem;font-weight:700;border-bottom:1px solid var(--border-color);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+        #new-file-btn{background:0 0;border:none;color:var(--text-light);font-size:24px;cursor:pointer}
+        .file-list-panel ul{list-style:none;padding:0;margin:0;flex-grow:1;overflow-y:auto}
+        .file-list-panel li{padding:12px 15px;cursor:pointer;border-radius:5px;display:flex;align-items:center;justify-content:space-between;gap:10px; user-select: none;}
+        .file-list-panel li:hover{background-color:#3a3a3c}
+        .file-list-panel li.selected{background-color:var(--accent-blue)}
+        .file-icon{width:20px;height:20px;flex-shrink:0;fill:currentColor}
+        .filename{flex-grow:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .delete-file-btn{background:0 0;border:none;color:var(--text-dark);cursor:pointer;font-size:20px;display:none;padding:0 5px}
+        .file-list-panel li:hover .delete-file-btn{display:inline}
+        .code-editor-panel{flex-grow:1;display:flex;flex-direction:column;width:100%}
+        .editor-tabs{display:flex;background:#252526;flex-shrink:0;overflow-x:auto}
+        .tab-item{padding:10px 15px;background:#2d2d2d;border-right:1px solid #333;cursor:pointer;color:var(--text-dark);display:flex;align-items:center;gap:8px;white-space:nowrap; user-select: none;}
+        .tab-item.active{background:#1e1e1e;color:var(--text-light)}
+        .tab-close-btn{font-size:18px;cursor:pointer;color:var(--text-dark);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:background-color .2s}
+        .tab-close-btn:hover{background:#555;color:white}
+        #code-editor{width:100%;height:100%;background:#1e1e1e;border:none;color:var(--text-light);font-family:'Courier New',Courier,monospace;font-size:14px;padding:15px;resize:none;outline:none;box-sizing:border-box}
+
+        /* --- Settings Page --- */
+        #settings-page .page-content { padding: 25px; max-width: 600px; margin: 0 auto; }
+        .setting-section { margin-bottom: 30px; }
+        .setting-section h2 { border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; font-size: 1.2rem; }
+        .setting-item { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .setting-item label { font-size: 1rem; color: var(--text-dark); }
+        .setting-item input { background-color: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-light); padding: 8px; border-radius: 6px; font-size: 1rem; }
+        .save-settings-btn { padding: 10px 20px; background: var(--accent-blue); border: none; border-radius: 8px; color: white; font-size: 1rem; cursor: pointer; float: right; }
+
+        /* --- Chat & Code Highlighting --- */
+        .message{display:flex;margin-bottom:15px;max-width:90%}.message-content{padding:10px 15px;border-radius:18px;line-height:1.5;word-wrap:break-word}.user-container{justify-content:flex-end;margin-left:auto}.ai-container{justify-content:flex-start;margin-right:auto}.user-message{background-color:#3a3a3c;color:var(--text-light);border-bottom-right-radius:4px}.ai-message{background-color:transparent;color:var(--text-light);padding:0}.ai-message pre{background-color:#282c34;border-radius:8px;padding:15px;white-space:pre-wrap;overflow-x:auto}.ai-message code{font-family:Consolas,"Courier New",monospace}.input-area{display:flex;align-items:flex-end;background-color:var(--panel-bg);border-radius:12px;padding:8px;border:1px solid #444;box-shadow:0 0 25px 5px rgba(0,122,255,.35)}.input-field{flex-grow:1;display:flex;flex-direction:column}.ask-me-input{width:100%;background:0 0;border:none;color:var(--text-light);font-size:16px;line-height:1.5;outline:0;resize:none;overflow-y:hidden;max-height:150px}.ask-me-input::placeholder{color:var(--text-dark)}.attachment-area{display:flex;align-items:center;gap:10px;margin-top:8px}#attach-btn{text-decoration:none;color:var(--text-dark);font-size:15px}#image-preview{max-height:40px;border-radius:5px}.send-button{width:32px;height:32px;background-color:var(--accent-blue);border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:8px;flex-shrink:0}
+    </style>
+</head>
+<body>
+    <div class="app-switcher" id="app-switcher">
+        <div class="page-previews">
+            <div class="page-preview-card" data-page="main-agent-page"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg> <h3>Main Agent</h3></div>
+            <div class="page-preview-card" data-page="preview-page"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg> <h3>Live Preview</h3></div>
+            <div class="page-preview-card" data-page="files-page"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> <h3>File Manager</h3></div>
+            <div class="page-preview-card" data-page="settings-page"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61-.25-1.17.59-1.69-.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19-.15-.24-.42-.12-.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59-1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg> <h3>Settings</h3></div>
+        </div>
+    </div>
+
+    <!-- Page 1: Main AI Agent -->
+    <div id="main-agent-page" class="page active">
+        <header class="page-header">
+            <div class="grid-icon"></div>
+            <div class="page-title">Main Agent</div>
+            <div class="header-controls">
+                <div class="mode-toggle-container">
+                    <button id="chat-mode-btn" class="mode-btn active">Chat</button>
+                    <button id="code-mode-btn" class="mode-btn">Code</button>
+                </div>
+            </div>
+        </header>
+        <main class="chat-body" id="chat-body"></main>
+        <footer class="chat-footer">
+             <form id="chat-form" class="input-area">
+                <div class="input-field">
+                    <textarea id="user-input" class="ask-me-input" placeholder="Describe the UI or attach an image..." rows="1"></textarea>
+                    <div class="attachment-area">
+                        <a href="#" id="attach-btn">Attach Image</a>
+                        <img id="image-preview" style="display: none;" />
+                    </div>
+                </div>
+                <button type="submit" class="send-button"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#fff"></path></svg></button>
+            </form>
+        </footer>
+    </div>
+    <input type="file" id="file-input" accept="image/*" style="display: none;">
+
+    <!-- Page 2: Live Preview -->
+    <div id="preview-page" class="page"><header class="page-header"><div class="grid-icon"></div><div class="page-title">Live Preview</div></header><main class="page-content"><iframe id="preview-frame" sandbox="allow-scripts"></iframe></main></div>
+    
+    <!-- Page 3: File Manager -->
+    <div id="files-page" class="page">
+        <header class="page-header">
+            <div class="grid-icon"></div>
+            <button id="file-menu-toggle" class="header-icon-btn">
+                <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
+            </button>
+            <div class="page-title">Code Editor</div>
+        </header>
+        <main class="page-content">
+            <div id="file-list-panel" class="file-list-panel">
+                <div class="file-list-header"><span>Project Files</span><button id="new-file-btn">+</button></div>
+                <ul id="file-list"></ul>
+            </div>
+            <div class="code-editor-panel">
+                <div id="editor-tabs" class="editor-tabs"></div>
+                <textarea id="code-editor" spellcheck="false" placeholder="Select a file from the side menu to start editing."></textarea>
+            </div>
+        </main>
+    </div>
+
+    <!-- Page 4: Settings -->
+    <div id="settings-page" class="page">
+        <header class="page-header"><div class="grid-icon"></div><div class="page-title">Settings</div></header>
+        <main class="page-content">
+            <div class="setting-section">
+                <h2>Editor</h2>
+                <div class="setting-item">
+                    <label for="editor-font-size">Font Size</label>
+                    <input type="number" id="editor-font-size" value="14" min="8" max="24">
+                </div>
+            </div>
+            <div class="setting-section">
+                <h2>API</h2>
+                <div class="setting-item">
+                    <label for="api-key-input">Gemini API Key</label>
+                    <input type="password" id="api-key-input">
+                </div>
+            </div>
+             <button id="save-settings-btn" class="save-settings-btn">Save Settings</button>
+        </main>
+    </div>
+    
+    <script>
+        // --- DOM Elements ---
+        const dom = {
+            appSwitcher: document.getElementById("app-switcher"),
+            pages: document.querySelectorAll(".page"),
+            pagePreviewCards: document.querySelectorAll(".page-preview-card"),
+            gridIcons: document.querySelectorAll(".grid-icon"),
+            chatForm: document.getElementById("chat-form"),
+            userInput: document.getElementById("user-input"),
+            chatBody: document.getElementById("chat-body"),
+            previewFrame: document.getElementById("preview-frame"),
+            fileList: document.getElementById("file-list"),
+            codeEditor: document.getElementById("code-editor"),
+            newFileBtn: document.getElementById("new-file-btn"),
+            attachBtn: document.getElementById("attach-btn"),
+            fileInput: document.getElementById("file-input"),
+            imagePreview: document.getElementById("image-preview"),
+            chatModeBtn: document.getElementById("chat-mode-btn"),
+            codeModeBtn: document.getElementById("code-mode-btn"),
+            fileMenuToggle: document.getElementById("file-menu-toggle"),
+            fileListPanel: document.getElementById("file-list-panel"),
+            editorTabs: document.getElementById("editor-tabs"),
+            editorFontSizeInput: document.getElementById("editor-font-size"),
+            apiKeyInput: document.getElementById("api-key-input"),
+            saveSettingsBtn: document.getElementById("save-settings-btn")
+        };
+        // --- App State ---
+        let fileSystem = {}, openFiles = [], activeFile = null, currentMode = "chat", conversationHistory = [], attachedImage = null;
+        
+        // ===============================================================
+        // === API KEY এর সঠিক স্থান ===
+        // আপনার দেওয়া API কী টি এখানে সুন্দরভাবে রাখা হয়েছে। 
+        // আপনি চাইলে সরাসরি এখানে পরিবর্তন করতে পারেন অথবা সেটিংস পৃষ্ঠা থেকেও পরিবর্তন করতে পারবেন।
+        let API_KEY = 'AIzaSyD65oyN5DC1unVhzYwID0GReRJzKSxkRKM'; 
+        // ===============================================================
+
+
+        // --- App Navigation ---
+        const toggleAppSwitcher = () => {
+            if (!dom.appSwitcher.classList.contains("visible")) updateLivePreview();
+            dom.appSwitcher.classList.toggle("visible");
+        };
+        const switchToPage = (pageId) => {
+            dom.pages.forEach(p => p.classList.remove("active"));
+            document.getElementById(pageId)?.classList.add("active");
+            toggleAppSwitcher();
+        };
+        dom.gridIcons.forEach(icon => {
+            icon.innerHTML = '<div class="grid-dot"></div><div class="grid-dot"></div><div class="grid-dot"></div><div class="grid-dot"></div>';
+            icon.addEventListener('click', toggleAppSwitcher);
+        });
+        dom.pagePreviewCards.forEach(card => card.addEventListener('click', () => switchToPage(card.dataset.page)));
+        
+        // --- Mode Toggle ---
+        const setMode = (mode) => {
+            currentMode = mode;
+            dom.chatModeBtn.classList.toggle('active', mode === 'chat');
+            dom.codeModeBtn.classList.toggle('active', mode === 'code');
+        };
+        dom.chatModeBtn.addEventListener('click', () => setMode('chat'));
+        dom.codeModeBtn.addEventListener('click', () => setMode('code'));
+
+        // --- File System & Editor UI ---
+        const getFileIcon = (filename) => {
+            const ext = filename.split('.').pop().toLowerCase();
+            const svgAttrs = `viewBox="0 0 24 24" width="20" height="20" fill="currentColor"`;
+            if (ext === 'html') return `<svg ${svgAttrs}><path d="M12 1L1 5v14l11 4 11-4V5L12 1zm0 2.24L19.5 6 12 8.74 4.5 6 12 3.24zM3 7.41l8 2.92v9.26l-8-3.22V7.41zm10 12.18v-9.26l8-2.92v9.58l-8 3.22z"></path></svg>`;
+            if (ext === 'css') return `<svg ${svgAttrs}><path d="M12 3l-9 3v10l9 4 9-4V6l-9-3zm0 2.15L18.5 7 12 9.15 5.5 7 12 5.15zM4 8.04L11 11v8.03l-7-3.1V8.04zm9 11.03V11l7-2.96v7.92l-7 3.07z"></path></svg>`;
+            if (ext === 'js') return `<svg ${svgAttrs}><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"></path></svg>`;
+            return `<svg ${svgAttrs}><path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm8 7h-2V4l4 4h-2z"></path></svg>`;
+        };
+
+        const updateLivePreview = () => {
+            const html = fileSystem["index.html"] || "";
+            const css = fileSystem["style.css"] || "";
+            const js = fileSystem["script.js"] || "";
+            const srcDoc = `<html><head><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+            dom.previewFrame.srcdoc = srcDoc;
+        };
+
+        const renderFileList = () => {
+            dom.fileList.innerHTML = "";
+            Object.keys(fileSystem).sort().forEach(filename => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="file-icon">${getFileIcon(filename)}</span><span class="filename">${filename}</span><button class="delete-file-btn">&times;</button>`;
+                li.dataset.filename = filename;
+                if (openFiles.includes(filename)) li.classList.add("selected");
+                dom.fileList.appendChild(li);
+            });
+        };
+
+        const renderEditorTabs = () => {
+            dom.editorTabs.innerHTML = "";
+            openFiles.forEach(filename => {
+                const tab = document.createElement('div');
+                tab.className = 'tab-item';
+                tab.dataset.filename = filename;
+                if (filename === activeFile) tab.classList.add('active');
+                tab.innerHTML = `<span class="filename">${filename}</span><span class="tab-close-btn">&times;</span>`;
+                dom.editorTabs.appendChild(tab);
+            });
+        };
+        
+        const showFileInEditor = (filename) => {
+            if (!fileSystem.hasOwnProperty(filename)) return;
+            activeFile = filename;
+            dom.codeEditor.value = fileSystem[filename] || "";
+            dom.codeEditor.disabled = false;
+            dom.codeEditor.placeholder = "";
+            renderEditorTabs();
+            renderFileList();
+        };
+
+        const handleFileClick = (filename) => {
+             if (!openFiles.includes(filename)) openFiles.push(filename);
+            showFileInEditor(filename);
+            dom.fileListPanel.classList.remove('open');
+        };
+
+        const closeFile = (filename) => {
+            openFiles = openFiles.filter(f => f !== filename);
+            if (activeFile === filename) activeFile = openFiles[openFiles.length - 1] || null;
+            
+            if (activeFile) {
+                showFileInEditor(activeFile);
+            } else {
+                dom.codeEditor.value = "";
+                dom.codeEditor.placeholder = "Select a file to start editing.";
+                dom.codeEditor.disabled = true;
+                renderEditorTabs();
+            }
+             renderFileList();
+        };
+
+        dom.fileList.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            const filename = li.dataset.filename;
+
+            if (e.target.classList.contains("delete-file-btn")) {
+                e.stopPropagation();
+                if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                    closeFile(filename);
+                    delete fileSystem[filename];
+                    renderFileList();
+                    updateLivePreview();
+                }
+            } else {
+                handleFileClick(filename);
+            }
+        });
+
+        dom.editorTabs.addEventListener('click', (e) => {
+            const tab = e.target.closest('.tab-item');
+            if (!tab) return;
+            const filename = tab.dataset.filename;
+
+            if (e.target.classList.contains('tab-close-btn')) {
+                e.stopPropagation();
+                closeFile(filename);
+            } else {
+                showFileInEditor(filename);
+            }
+        });
+
+        dom.codeEditor.addEventListener('input', () => {
+            if (activeFile) {
+                fileSystem[activeFile] = dom.codeEditor.value;
+                // Debounce live preview for better performance
+                setTimeout(updateLivePreview, 300);
+            }
+        });
+
+        dom.newFileBtn.addEventListener('click', () => {
+            const filename = prompt("Enter new filename (e.g., index.html):");
+            if (filename && !fileSystem.hasOwnProperty(filename)) {
+                fileSystem[filename] = "";
+                handleFileClick(filename);
+            } else if (filename) {
+                alert("A file with that name already exists!");
+            }
+        });
+        
+        dom.fileMenuToggle.addEventListener('click', () => dom.fileListPanel.classList.toggle('open'));
+
+        // --- Image Attachment ---
+        dom.attachBtn.addEventListener("click", e => { e.preventDefault(); dom.fileInput.click() });
+        dom.fileInput.addEventListener("change", e => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    attachedImage = { mimeType: file.type, base64: e.target.result.split(",")[1] };
+                    dom.imagePreview.src = e.target.result;
+                    dom.imagePreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- AI & Chat Logic ---
+        const parseAndExecuteAICommands = (response) => {
+            let pureResponse = response;
+            const fileRegex = /\[CREATE_FILE:\s*([^\]]+)\]\s*([\s\S]*?)\s*\[ENDFILE\]/g;
+            let match, filesCreated = false, lastCreatedFile = null;
+            while ((match = fileRegex.exec(response)) !== null) {
+                const filename = match[1].trim();
+                const content = match[2].trim().replace(/^```[a-z]*\n|```$/g, '');
+                fileSystem[filename] = content;
+                pureResponse = pureResponse.replace(match[0], "").trim();
+                filesCreated = true;
+                if (!openFiles.includes(filename)) openFiles.push(filename);
+                lastCreatedFile = filename;
+            }
+            if (filesCreated) {
+                showFileInEditor(lastCreatedFile);
+                renderFileList();
+                updateLivePreview();
+            }
+            return pureResponse || (filesCreated ? "Done. I've updated the files. Check the file manager and live preview." : response);
+        };
+        
+        async function getGeminiResponse(prompt, image) {
+            if (!API_KEY || API_KEY.includes('YOUR_API_KEY')) return "Error: API Key is missing. Please set it in the settings page.";
+            
+            // ===============================================================
+            // === চূড়ান্ত সমাধান: একটিমাত্র মডেল যা লেখা এবং ছবি দুটোই সাপোর্ট করে ===
+            // এখন থেকে `gemini-1.5-flash-latest` মডেলটি ব্যবহার করা হবে।
+            // এটি ছবিসহ এবং ছবি ছাড়া উভয় অনুরোধের জন্যই কাজ করবে, তাই আর কোনো মডেলের নাম নিয়ে ত্রুটি হবে না।
+            const model = "gemini-1.5-flash-latest"; 
+            // ===============================================================
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+            
+            // ইউজারের পাঠানো লেখা এবং ছবিকে সঠিকভাবে প্রস্তুত করা হচ্ছে
+            const userParts = [{ text: `CONTEXT: You are an expert web developer AI. Your task is to help the user build a web page. Current mode is "${currentMode}". When you provide code for files, you MUST use the [CREATE_FILE: filename.ext]...[/ENDFILE] syntax. Inside, use markdown code blocks. Example: [CREATE_FILE: index.html]\n\`\`\`html\n<h1>Hello</h1>\n\`\`\`\n[/ENDFILE]\n\nUSER_REQUEST: ${prompt}` }];
+            if (image) {
+                userParts.push({ inline_data: { mime_type: image.mimeType, data: image.base64 } });
+            }
+            
+            const payload = { contents: [...conversationHistory, { role: "user", parts: userParts }] };
+
+            const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            const data = await res.json();
+
+            if (!res.ok) {
+                console.error("API Error Response:", data);
+                const errorMsg = data?.error?.message || `API Error: ${res.status} ${res.statusText}`;
+                throw new Error(errorMsg);
+            }
+
+            if (!data.candidates || data.candidates.length === 0) {
+                 const safetyFeedback = data.promptFeedback?.blockReason || "an unknown reason (possibly safety settings)";
+                 throw new Error(`API returned no response. This might be due to ${safetyFeedback}.`);
+            }
+            const aiResponseText = data.candidates[0].content.parts[0].text;
+            conversationHistory.push({ role: "user", parts: userParts }, { role: "model", parts: [{ text: aiResponseText }] });
+            return aiResponseText;
+        }
+
+        dom.chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = dom.userInput.value.trim();
+            if (!userMessage && !attachedImage) return;
+            addMessage(userMessage, "user", attachedImage);
+            dom.userInput.value = "";
+            dom.userInput.style.height = "auto";
+            dom.imagePreview.style.display = "none";
+            const imageToSend = attachedImage;
+            attachedImage = null;
+            showTypingIndicator();
+            try {
+                const aiRaw = await getGeminiResponse(userMessage, imageToSend);
+                const aiParsed = parseAndExecuteAICommands(aiRaw);
+                hideTypingIndicator();
+                addMessage(aiParsed, "ai");
+            } catch (err) {
+                hideTypingIndicator();
+                addMessage(`Error: ${err.message}`, "ai");
+            }
+        });
+
+        // --- Settings Logic ---
+        const loadSettings = () => {
+            const savedFontSize = localStorage.getItem('editorFontSize') || '14';
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            
+            dom.editorFontSizeInput.value = savedFontSize;
+            dom.codeEditor.style.fontSize = `${savedFontSize}px`;
+            
+            dom.apiKeyInput.value = savedApiKey || API_KEY;
+            if(savedApiKey) API_KEY = savedApiKey;
+        };
+
+        const saveSettings = () => {
+            const newFontSize = dom.editorFontSizeInput.value;
+            const newApiKey = dom.apiKeyInput.value.trim();
+            
+            localStorage.setItem('editorFontSize', newFontSize);
+            dom.codeEditor.style.fontSize = `${newFontSize}px`;
+
+            if (newApiKey) {
+                API_KEY = newApiKey; // Real-time update of API Key
+                localStorage.setItem('geminiApiKey', newApiKey);
+            }
+            alert('Settings saved!');
+        };
+        dom.saveSettingsBtn.addEventListener('click', saveSettings);
+
+        // --- Utility Functions ---
+        function addMessage(text, sender, image = null) {
+            const container = document.createElement("div"); container.className = `message ${sender}-container`;
+            const content = document.createElement("div"); content.className = `message-content ${sender}-message`;
+            if (image) { const img = document.createElement("img"); img.src = `data:${image.mimeType};base64,${image.base64}`; img.style.maxWidth = "100%"; img.style.borderRadius = "10px"; img.style.marginBottom = "10px"; content.appendChild(img) }
+            if (text) { content.innerHTML = sender === "ai" ? marked.parse(text) : `<p style="margin:0;">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`; }
+            container.appendChild(content); dom.chatBody.appendChild(container); dom.chatBody.scrollTop = dom.chatBody.scrollHeight;
+            if (sender === "ai") hljs.highlightAll();
+        }
+        const showTypingIndicator = () => { if (document.getElementById("typing-indicator")) return; const t = document.createElement("div"); t.id = "typing-indicator", t.className = "message ai-container", t.innerHTML = '<div class="message-content ai-message">Typing...</div>', dom.chatBody.appendChild(t), dom.chatBody.scrollTop = dom.chatBody.scrollHeight };
+        const hideTypingIndicator = () => { document.getElementById("typing-indicator")?.remove() };
+        dom.userInput.addEventListener("input", () => { dom.userInput.style.height = "auto", dom.userInput.style.height = `${dom.userInput.scrollHeight}px`, dom.userInput.style.overflowY = dom.userInput.scrollHeight > 150 ? "auto" : "hidden" });
+        dom.userInput.addEventListener("keydown", e => { e.key === "Enter" && !e.shiftKey && (e.preventDefault(), dom.chatForm.requestSubmit()) });
+
+        // --- Initial Load ---
+        function initializeApp() {
+            addMessage("Hello! I'm Tinky Model. How can I help you build today?", "ai");
+            renderFileList();
+            renderEditorTabs();
+            updateLivePreview();
+            loadSettings();
+            dom.codeEditor.disabled = true;
+        }
+        initializeApp();
+    </script>
+</body>
+</html>
